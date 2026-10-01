@@ -687,7 +687,7 @@ td input:focus,td select:focus,td textarea:focus{
 <header>
   <h1>Relationship Compatibility</h1>
   <div class="subtitle">Editable master data • calculated compatibility metrics • online save • printable report</div>
-  <div id="authArea" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 4px"></div>
+  <div id="authArea" style="margin:12px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
   <div class="actions">
     <button class="primary" onclick="saveData()">Save Data</button>
     <button class="green" onclick="generateReport()">📄 Generate Report</button>
@@ -701,16 +701,10 @@ td input:focus,td select:focus,td textarea:focus{
 const SUPABASE_URL = "https://xxcarudbbsoojimgvcue.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cldPfBr69w35IbFAHtnWPg_hsz9zUP5";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentOnlineUser = null;
 
 const INITIAL = {"Instructions": {"headers": ["RELATIONSHIP COMPATIBILITY STUDY — MASTER DATA TEMPLATE", null, null, null, null, null], "rows": [["Purpose", null, null, null, null, null], ["Use this workbook to enter relationship-study data before the interactive HTML dashboard is generated.", null, null, null, null, null], ["Profiles", "Enter one person per row in the Profiles sheet. Add unlimited profiles later.", null, null, null, null], ["Categories", "Edit/add relationship dimensions and set importance from 1–10.", null, null, null, null], ["Scores", "Use 1–10. For stronger analysis, enter both self-perception and partner-perception.", null, null, null, null], ["Importance", "Rate how important each dimension is to the relationship from 1–10.", null, null, null, null], ["Gap", "The HTML will calculate the absolute difference between perceptions.", null, null, null, null], ["Scenarios", "Rate expected responses to realistic relationship situations.", null, null, null, null], ["Monthly Trend", "Enter repeated scores over time to study improvement or decline.", null, null, null, null], ["Notes", "Use notes for concrete examples/evidence behind a score.", null, null, null, null]]}, "Categories": {"headers": ["Category ID", "Category", "Importance (1-10)", "Description / What to assess"], "rows": [["C01", "Communication", 10, "Clarity, listening, openness, difficult conversations"], ["C02", "Trust & Security", 10, "Honesty, reliability, trust, emotional safety"], ["C03", "Understanding", 9, "Understanding personality, needs, boundaries and feelings"], ["C04", "Affection & Love Language", 8, "Attention, appreciation, affection and preferred love language"], ["C05", "Conflict Handling", 10, "Disagreements, repair, compromise and problem solving"], ["C06", "Fun & Lifestyle Compatibility", 7, "Hobbies, social style, routines and activities"], ["C07", "Mutual Support", 9, "Support during stress, study, work and personal challenges"], ["C08", "Future Alignment", 10, "Marriage, career, children, location and long-term goals"], ["C09", "Family Compatibility", 8, "Family expectations, boundaries and relationships"], ["C10", "Financial Compatibility", 9, "Saving, spending, debt and financial priorities"], ["C11", "Emotional Resilience", 8, "Stress response, emotional regulation and recovery"], ["C12", "Chemistry & Romance", 8, "Romantic connection, attraction and closeness"], ["C13", "Personal Growth", 7, "Whether both people encourage healthy growth"], ["C14", "Values & Principles", 10, "Core values, ethics, priorities and life principles"], ["C15", "Marriage / Daily Life", 10, "Household roles, responsibilities and lifestyle expectations"], ["C16", "Education & Learning Compatibility", 7, "Education background, learning interests, further-study goals and support for each other's development"]]}, "Profiles": {"headers": ["Profile ID", "Name", "Age", "Birthday", "Occupation / Study", "Education", "Personality", "Interests", "Strengths", "Things to Improve", "Relationship Notes"], "rows": [["P01", "Alya", 29, "1997-11-27", "freelancer", "Masters In Visual Comunication", "Caring/ Attachment Issue", "Art/ Cute things ?/ F1", "5 star Hospitality", "Parent issue ", "Good if her mom okay "], ["P02", "Puteri", 30, "1/27/96", "Procument", "Masters in Sustainable", "Avoident/ Indipendent", "Art/ Cute things ?/ Concert/ Outdoor Activity", "Sekufu Family / Inteligent/ ", "Lack of sense of humor/ too much independent", "SO/SO"]]}, "Score Matrix": {"headers": ["Category", "Importance", "Alya - Self Score", "Alya - Partner Score", "Puteri - Self Score", "Puteri - Partner Score", "Alya Gap", "Puteri Gap", "Alya Weighted", "Puteri Weighted", "Study Notes"], "rows": [["Communication", 10, null, null, null, null, null, null, null, null, null], ["Trust & Security", 10, null, null, null, null, null, null, null, null, null], ["Understanding", 9, null, null, null, null, null, null, null, null, null], ["Affection & Love Language", 8, null, null, null, null, null, null, null, null, null], ["Conflict Handling", 10, null, null, null, null, null, null, null, null, null], ["Fun & Lifestyle Compatibility", 7, null, null, null, null, null, null, null, null, null], ["Mutual Support", 9, null, null, null, null, null, null, null, null, null], ["Future Alignment", 10, null, null, null, null, null, null, null, null, null], ["Family Compatibility", 8, null, null, null, null, null, null, null, null, null], ["Financial Compatibility", 9, null, null, null, null, null, null, null, null, null], ["Emotional Resilience", 8, null, null, null, null, null, null, null, null, null], ["Chemistry & Romance", 8, null, null, null, null, null, null, null, null, null], ["Personal Growth", 7, null, null, null, null, null, null, null, null, null], ["Values & Principles", 10, null, null, null, null, null, null, null, null, null], ["Marriage / Daily Life", 10, null, null, null, null, null, null, null, null, null], ["Education & Learning Compatibility", 7, null, null, null, null, null, null, null, null, null]]}, "Scenario Study": {"headers": ["Scenario ID", "Scenario", "Dimension Tested", "Alya Response Score (1-10)", "Puteri Response Score (1-10)", "Importance", "Alya Notes", "Puteri Notes"], "rows": [["S01", "One person loses their job for 6 months", "Financial / Support", 10, 5, null, null, null], ["S02", "One person receives a job offer in another state", "Career / Compromise", 10, 10, null, null, null], ["S03", "Family members disagree with an important decision", "Family / Conflict", 2, 10, null, null, null], ["S04", "Unexpected RM10,000 emergency expense", "Finance / Problem Solving", 2, 2, null, null, null], ["S05", "One person needs significant emotional support", "Emotional / Support", 4, 4, null, null, null], ["S06", "Planning marriage within 1–2 years", "Future / Marriage", 3, 10, null, null, null], ["S07", "Different opinions about having children", "Values / Future", 5, 3, null, null, null], ["S08", "Different preferred living location", "Lifestyle / Future", 10, 5, null, null, null], ["S09", "One person wants to change career direction", "Career / Growth", 10, 3, null, null, null], ["S10", "Major disagreement about spending or saving", "Finance / Conflict", 2, 1, null, null, null]]}, "Monthly Trend": {"headers": ["Date", "Profile", "Communication", "Trust", "Affection", "Conflict Handling", "Future Alignment", "Family", "Education", "Finance", "Overall Notes"], "rows": []}, "Future & Finance": {"headers": ["Area", "Topic", "Alya Position / Target", "Puteri Position / Target", "Importance (1-10)", "Alignment Notes"], "rows": [["Marriage", "Target marriage timeframe", null, null, null, null], ["Marriage", "Preferred wedding budget", null, null, null, null], ["Children", "Want children?", null, null, null, null], ["Children", "Number of children", null, null, null, null], ["Location", "Preferred state/city", null, null, null, null], ["Career", "Career priority", null, null, null, null], ["Finance", "Saving philosophy", null, null, null, null], ["Finance", "Spending philosophy", null, null, null, null], ["Finance", "Debt tolerance", null, null, null, null], ["Finance", "Emergency fund target", null, null, null, null], ["Lifestyle", "Preferred daily routine", null, null, null, null], ["Family", "Family involvement / boundaries", null, null, null, null], ["Home", "Living arrangement", null, null, null, null], ["Values", "Core principles", null, null, null, null], ["Education", "Education / Learning goals", null, null, null, null]]}, "Dashboard Setup": {"headers": ["Module", "Planned Analysis", "Input Sheet", "Ready for HTML?"], "rows": [["Overview", "Overall score, weighted score, strengths, gaps, priority areas", "See relevant input sheet", "YES"], ["Compatibility", "Dual radar: self-perception vs partner-perception", "See relevant input sheet", "YES"], ["Gap Analysis", "Category-by-category disagreement and gap severity", "See relevant input sheet", "YES"], ["Priority Matrix", "Importance vs compatibility gap", "See relevant input sheet", "YES"], ["Personality", "Profile information, interests, values and lifestyle", "See relevant input sheet", "YES"], ["Future Planning", "Marriage, children, career, location and lifestyle alignment", "See relevant input sheet", "YES"], ["Financial", "Saving, spending and financial-goal compatibility", "See relevant input sheet", "YES"], ["Scenario Test", "Real-life hypothetical scenario analysis", "See relevant input sheet", "YES"], ["Relationship Trend", "Monthly score trends over time", "See relevant input sheet", "YES"], ["Profile Manager", "Add/delete/edit unlimited profiles and photos", "See relevant input sheet", "YES"], ["Education & Growth", "Education level, learning goals, career-development alignment", "Profiles + Future & Finance", "YES"]]}, "Spider Chart Data": {"headers": ["Category", "Alya", "Puteri", "Notes / Reason"], "rows": [["Communication", 9, 5, ""], ["Trust", 4, 3, ""], ["Affection", 6, 4, ""], ["Understanding", 8, 4, ""], ["Conflict Handling", 4, 1, ""], ["Fun & Compatibility", 10, 10, ""], ["Support", 10, 10, ""], ["Future Alignment", 8, 10, ""], ["Family Compatibility", 3, 5, ""], ["Financial Compatibility", 3, 7, ""]]}};
-const DASHBOARD_SCHEMA_VERSION = 2;
-let db = (()=>{
-  try{
-    const saved=JSON.parse(localStorage.getItem("relationshipDashboardData") || "null");
-    return saved && saved.__schemaVersion===DASHBOARD_SCHEMA_VERSION ? saved : INITIAL;
-  }catch(_){ return INITIAL; }
-})();
-db.__schemaVersion=DASHBOARD_SCHEMA_VERSION;
+let db = JSON.parse(localStorage.getItem("relationshipDashboardData") || "null") || INITIAL;
 let activeTab = "Dashboard";
 let compareA = null;
 let compareB = null;
@@ -732,75 +726,84 @@ function isBlank(v){return v===null||v===undefined||v==="";}
 function valNum(v){let n=parseFloat(v);return Number.isFinite(n)?n:null;}
 async function saveData(silent=false){
   localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
+  if(!currentOnlineUser){
+    if(!silent) alert("Saved locally. Sign in to save this dashboard online.");
+    return;
+  }
   try{
-    const {data:{session}} = await supabaseClient.auth.getSession();
-    if(!session){
-      if(!silent) alert("Saved locally. Sign in to save this dashboard online.");
-      return;
-    }
-    const payload = JSON.parse(JSON.stringify(db));
-    const {error} = await supabaseClient
-      .from("relationship_dashboards")
-      .upsert({owner_id:session.user.id,data:payload},{onConflict:"owner_id"});
+    const payload={...db,__schemaVersion:2};
+    const {error}=await supabaseClient.from("relationship_dashboards").upsert({
+      owner_id:currentOnlineUser.id,
+      data:payload,
+      updated_at:new Date().toISOString()
+    },{onConflict:"owner_id"});
     if(error) throw error;
     if(!silent) alert("Saved online successfully.");
   }catch(err){
     console.error("Online save failed",err);
-    if(!silent) alert("Saved locally, but online save failed: "+(err?.message||"Unknown error"));
+    if(!silent) alert("Saved locally, but online save failed: "+err.message);
   }
 }
 
 function renderAuthArea(user){
+  currentOnlineUser=user||null;
   const el=document.getElementById("authArea");
-  if(!el) return;
+  if(!el)return;
   if(user){
-    const email=String(user.email||"");
-    el.innerHTML=`<span class="badge">Online: ${esc(email)}</span><button class="small" onclick="signOutOnline()">Sign Out</button>`;
+    el.innerHTML=`<span class="badge">Online</span><span class="small">${esc(user.email||"")}</span><button class="small" onclick="saveData()">☁ Save Online</button><button class="small danger" onclick="signOutOnline()">Sign Out</button>`;
   }else{
-    el.innerHTML=`<span class="small">Online storage:</span><button class="small" onclick="signInOnline()">Sign In</button><button class="small" onclick="signUpOnline()">Create Account</button>`;
+    el.innerHTML=`<button class="small" onclick="showAuthForm('signin')">Sign In</button><button class="small" onclick="showAuthForm('signup')">Create Account</button><span class="small">Sign in to save across devices.</span>`;
   }
 }
 
-async function signInOnline(){
-  const email=prompt("Email address:");
-  if(!email) return;
-  const password=prompt("Password:");
-  if(!password) return;
-  const {error}=await supabaseClient.auth.signInWithPassword({email:email.trim(),password});
-  if(error) alert("Sign in failed: "+error.message);
+function showAuthForm(mode){
+  const title=mode==="signup"?"Create Account":"Sign In";
+  const action=mode==="signup"?createOnlineAccount:signInOnline;
+  const email=prompt(title+"\n\nEmail:");
+  if(email===null)return;
+  const password=prompt("Password (minimum 6 characters):");
+  if(password===null)return;
+  action(email.trim(),password);
 }
 
-async function signUpOnline(){
-  const email=prompt("Email address:");
-  if(!email) return;
-  const password=prompt("Create a password (minimum 6 characters):");
-  if(!password) return;
-  const {data,error}=await supabaseClient.auth.signUp({email:email.trim(),password});
-  if(error){ alert("Account creation failed: "+error.message); return; }
-  if(data?.session) alert("Account created and signed in.");
-  else alert("Account created. Check your email to confirm the account, then sign in.");
+async function signInOnline(email,password){
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){alert("Sign in failed: "+error.message);return;}
+  currentOnlineUser=data.user;
+  renderAuthArea(currentOnlineUser);
+  await loadOnlineData(currentOnlineUser.id);
+}
+
+async function createOnlineAccount(email,password){
+  if(password.length<6){alert("Password must be at least 6 characters.");return;}
+  const {data,error}=await supabaseClient.auth.signUp({email,password});
+  if(error){alert("Account creation failed: "+error.message);return;}
+  if(data?.session){
+    currentOnlineUser=data.user;
+    renderAuthArea(currentOnlineUser);
+    await loadOnlineData(currentOnlineUser.id);
+    alert("Account created and signed in.");
+  }else{
+    alert("Account created. Check your email to confirm the account, then sign in.");
+  }
 }
 
 async function signOutOnline(){
   const {error}=await supabaseClient.auth.signOut();
-  if(error) alert("Sign out failed: "+error.message);
+  if(error){alert("Sign out failed: "+error.message);return;}
+  currentOnlineUser=null;
+  renderAuthArea(null);
 }
 
 async function loadOnlineData(userId){
   try{
-    const {data,error}=await supabaseClient
-      .from("relationship_dashboards")
-      .select("data,updated_at")
-      .eq("owner_id",userId)
-      .maybeSingle();
-    if(error) throw error;
-    // Only replace the current dashboard when an online record actually exists.
-    // This preserves the original embedded master data for first-time users.
-    if(data?.data && typeof data.data==="object" && data.data.__schemaVersion===DASHBOARD_SCHEMA_VERSION){
+    const {data,error}=await supabaseClient.from("relationship_dashboards").select("data,updated_at").eq("owner_id",userId).maybeSingle();
+    if(error)throw error;
+    if(data?.data && typeof data.data === "object"){
       db=data.data;
-      db.__schemaVersion=DASHBOARD_SCHEMA_VERSION;
       db.__profilePhotos=db.__profilePhotos||{};
       db.__comparison=db.__comparison||{};
+      localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
       render();
       setTimeout(drawCharts,80);
     }
@@ -813,9 +816,13 @@ async function initOnline(){
   try{
     const {data:{session}}=await supabaseClient.auth.getSession();
     renderAuthArea(session?.user||null);
-    if(session?.user) await loadOnlineData(session.user.id);
+    if(session?.user){
+      currentOnlineUser=session.user;
+      await loadOnlineData(session.user.id);
+    }
     supabaseClient.auth.onAuthStateChange((_event,nextSession)=>{
       renderAuthArea(nextSession?.user||null);
+      currentOnlineUser=nextSession?.user||null;
       if(nextSession?.user) setTimeout(()=>loadOnlineData(nextSession.user.id),0);
     });
   }catch(err){
@@ -990,11 +997,466 @@ function profileCard(row,index){
 function profilesPage(){
   const rows=profileRows();
   return `<div class="card">
-    <div class="profile-toolbar">
-      <div><h2 style="margin-bottom:3px">Profiles</h2><div class="section-note" style="margin:0">Build a clean profile for each person. Add a photo and keep the detailed fields editable below.</div></div>
+    <div class="profile-toolbar">      <div><h2 style="margin-bottom:3px">Profiles</h2><div class="section-note" style="margin:0">Build a clean profile for each person. Add a photo and keep the detailed fields editable below.</div></div>
       <button class="primary" onclick="addRow('Profiles')">＋ Add Profile</button>
     </div>
     <div class="profile-grid">
       ${rows.length?rows.map((r,i)=>profileCard(r,i)).join(""):`<div class="empty">No profiles yet. Add your first profile.</div>`}
     </div>
   </div>
+  <div class="card">
+    <h2>Profile Details</h2>
+    <div class="section-note">The original editable profile data remains available here.</div>
+    ${renderTable("Profiles")}
+  </div>`;
+}
+function profileNames(){
+  return profileRows().map(r=>String(r[1]??"").trim()).filter(Boolean);
+}
+function setCompare(which,value){
+  if(which==="a") compareA=value;
+  else compareB=value;
+  db.__comparison={a:compareA,b:compareB};
+  render();
+}
+function getCompareSelections(){
+  const names=profileNames();
+  const saved=db.__comparison||{};
+  compareA=names.includes(compareA)?compareA:(names.includes(saved.a)?saved.a:(names[0]||""));
+  compareB=names.includes(compareB)?compareB:(names.includes(saved.b)?saved.b:(names.find(n=>n!==compareA)||names[1]||""));
+  if(compareA===compareB && names.length>1) compareB=names.find(n=>n!==compareA)||"";
+}
+function compareValues(){
+  const header=db["Spider Chart Data"]?.headers || [];
+  const rows=db["Spider Chart Data"]?.rows || [];
+  const ai=header.findIndex(h=>String(h??"").trim()===String(compareA??"").trim());
+  const bi=header.findIndex(h=>String(h??"").trim()===String(compareB??"").trim());
+  return rows.map(r=>{
+    const name=String(r?.[0]??"").trim();
+    if(!name)return null;
+    return {name,a:ai>=0?valNum(r?.[ai]):null,b:bi>=0?valNum(r?.[bi]):null};
+  }).filter(Boolean);
+}
+function compareMini(row){
+  const name=String(row?.[1]??"").trim();
+  const photo=profilePhoto(name);
+  const avatar=photo?`<img class="compare-mini-avatar" src="${esc(photo)}" alt="${esc(name)}">`:`<div class="compare-mini-avatar compare-mini-placeholder">${esc(profileInitials(name))}</div>`;
+  return `<div class="mini">${avatar}<div><b>${esc(name||"Not selected")}</b><div class="small">${esc(String(row?.[4]??""))}</div></div></div>`;
+}
+
+function compareRadarSVG(values){
+  const data=values.filter(x=>x.a!==null || x.b!==null);
+  if(!data.length) return "<div class='empty' style='padding:55px;text-align:center'>No score data available for this pair.</div>";
+  const w=760,h=430,cx=380,cy=205,R=145,n=data.length;
+  const angle=i=>(-Math.PI/2)+(i*2*Math.PI/n);
+  const pt=(i,v)=>{
+    const a=angle(i), rr=R*(Math.max(0,Math.min(10,v||0))/10);
+    return [cx+rr*Math.cos(a),cy+rr*Math.sin(a)];
+  };
+  const poly=(v)=>data.map((_,i)=>pt(i,v)).map(p=>p.join(",")).join(" ");
+  const pts=(k)=>data.map((d,i)=>pt(i,d[k] ?? 0)).map(p=>p.join(",")).join(" ");
+  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  [2,4,6,8,10].forEach(v=>{
+    s+=`<polygon points="${poly(v)}" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="${v===10?1.2:1}"/>`;
+  });
+  data.forEach((d,i)=>{
+    const [x,y]=pt(i,10);
+    const a=angle(i), lx=cx+(R+28)*Math.cos(a), ly=cy+(R+28)*Math.sin(a);
+    let anchor="middle";
+    if(lx<cx-12) anchor="end";
+    if(lx>cx+12) anchor="start";
+    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(0,0,0,.06)"/>`;
+    s+=`<text x="${lx}" y="${ly+4}" text-anchor="${anchor}" font-size="11" fill="#6e6e73">${esc(shortLabel(d.name,18))}</text>`;
+  });
+  s+=`<polygon points="${pts("a")}" fill="rgba(0,113,227,.11)" stroke="#0071e3" stroke-width="2.5"/>`;
+  s+=`<polygon points="${pts("b")}" fill="rgba(175,82,222,.10)" stroke="#af52de" stroke-width="2.5"/>`;
+  data.forEach((d,i)=>{
+    if(d.a!==null){const [x,y]=pt(i,d.a);s+=`<circle cx="${x}" cy="${y}" r="3.8" fill="#0071e3" stroke="#fff" stroke-width="1.5"/>`;}
+    if(d.b!==null){const [x,y]=pt(i,d.b);s+=`<circle cx="${x}" cy="${y}" r="3.8" fill="#af52de" stroke="#fff" stroke-width="1.5"/>`;}
+  });
+  s+=`<g font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif">
+    <text x="20" y="24" font-size="11" fill="#6e6e73">0–10 compatibility scale</text>
+  </g></svg>`;
+  return s + `<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>${esc(compareA||"Person 1")}</span><span><i class="legend-dot legend-puterI"></i>${esc(compareB||"Person 2")}</span></div>`;
+}
+function trendRows(){
+  const t=db["Monthly Trend"]?.rows||[];
+  return t.filter(r=>Array.isArray(r) && String(r[0]??"").trim());
+}
+function trendFor(name){
+  const rows=trendRows();
+  if(!rows.length)return [];
+  const headers=db["Monthly Trend"]?.headers||[];
+  const nameCol=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(name??"").trim().toLowerCase());
+  if(nameCol<0)return [];
+  return rows.map(r=>({period:String(r[0]??"").trim(), value:valNum(r[nameCol])})).filter(x=>x.value!==null);
+}
+function scenarioRowsForCompare(){
+  const rows=db["Scenario Study"]?.rows||[];
+  const headers=db["Scenario Study"]?.headers||[];
+  const ai=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(compareA??"").trim().toLowerCase());
+  const bi=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(compareB??"").trim().toLowerCase());
+  if(ai<0 && bi<0)return [];
+  return rows.map(r=>({
+    scenario:String(r[1]??r[0]??"").trim(),
+    a:ai>=0?valNum(r[ai]):null,
+    b:bi>=0?valNum(r[bi]):null
+  })).filter(x=>x.scenario && (x.a!==null || x.b!==null));
+}
+function buildForecast(values){
+  const complete=values.filter(x=>x.a!==null&&x.b!==null);
+  const currentA=complete.length?avg(complete.map(x=>x.a)):null;
+  const currentB=complete.length?avg(complete.map(x=>x.b)):null;
+  const avgGap=complete.length?avg(complete.map(x=>Math.abs(x.a-x.b))):null;
+
+  // Prefer real Monthly Trend data when it exists.
+  const ta=trendFor(compareA), tb=trendFor(compareB);
+  function projected(series){
+    if(series.length<2)return null;
+    const vals=series.slice(-6);
+    const first=vals[0].value, last=vals[vals.length-1].value;
+    return Math.max(0,Math.min(10,last + (last-first)/Math.max(1,vals.length-1)));
+  }
+  let projA=projected(ta), projB=projected(tb);
+  let source="Monthly Trend";
+  if(projA===null && currentA!==null){projA=currentA; source="current-score baseline";}
+  if(projB===null && currentB!==null){projB=currentB; source=source==="Monthly Trend"?"mixed data":"current-score baseline";}
+  const scenarios=scenarioRowsForCompare();
+  let scenarioAvgA=null,scenarioAvgB=null;
+  const scA=scenarios.filter(x=>x.a!==null).map(x=>x.a);
+  const scB=scenarios.filter(x=>x.b!==null).map(x=>x.b);
+  if(scA.length)scenarioAvgA=avg(scA);
+  if(scB.length)scenarioAvgB=avg(scB);
+
+  return {currentA,currentB,avgGap,projA,projB,source,scenarios,scenarioAvgA,scenarioAvgB};
+}
+function forecastPanel(values){
+  const f=buildForecast(values);
+  if(f.currentA===null && f.currentB===null){
+    return `<div class="empty">Add score data for the selected pair to generate forecast analysis.</div>`;
+  }
+  const shownA=f.projA===null?"—":f.projA.toFixed(1);
+  const shownB=f.projB===null?"—":f.projB.toFixed(1);
+  const shared=f.avgGap===null?null:Math.max(0,100-f.avgGap*10);
+  const scenario=f.scenarios.slice(0,5);
+  return `<div>
+    <div class="forecast-grid">
+      <div class="forecast-metric"><div class="label">Current ${esc(compareA)}</div><div class="value">${f.currentA===null?"—":f.currentA.toFixed(1)}</div></div>
+      <div class="forecast-metric"><div class="label">Current ${esc(compareB)}</div><div class="value">${f.currentB===null?"—":f.currentB.toFixed(1)}</div></div>
+      <div class="forecast-metric"><div class="label">Agreement index</div><div class="value">${shared===null?"—":shared.toFixed(0)+"%"}</div></div>
+    </div>
+    <div style="margin-top:18px;font-size:13px;font-weight:650">Projected baseline</div>
+    <div class="forecast-row"><div>${esc(compareA)}</div><div class="bar"><div class="fill" style="width:${f.projA===null?0:(f.projA/10*100)}%;background:#0071e3"></div></div><div>${shownA}/10</div></div>
+    <div class="forecast-row"><div>${esc(compareB)}</div><div class="bar"><div class="fill" style="width:${f.projB===null?0:(f.projB/10*100)}%;background:#af52de"></div></div><div>${shownB}/10</div></div>
+    ${scenario.length?`<div style="margin-top:20px;font-size:13px;font-weight:650">Scenario resilience</div>
+      <div class="scenario-list">${scenario.map(x=>`<div class="scenario-item"><div class="title">${esc(x.scenario)}</div><div class="scores">${esc(compareA)}: ${x.a===null?"—":x.a+"/10"} &nbsp;•&nbsp; ${esc(compareB)}: ${x.b===null?"—":x.b+"/10"}</div></div>`).join("")}</div>`:""}
+    <div class="forecast-footnote">
+      Forecast is a simple analytical baseline, not a prediction of relationship outcomes.
+      ${esc(f.source)} is used when available. With insufficient trend history, the current score average is carried forward as the baseline.
+    </div>
+  </div>`;
+}
+
+function comparisonPage(){
+  const names=profileNames();
+  getCompareSelections();
+  const arow=profileByName(compareA), brow=profileByName(compareB);
+  const values=compareValues();
+  const compared=values.filter(x=>x.a!==null&&x.b!==null);
+  const gapAvg=compared.length?avg(compared.map(x=>Math.abs(x.a-x.b))):null;
+  const avgA=compared.length?avg(compared.map(x=>x.a)):null;
+  const avgB=compared.length?avg(compared.map(x=>x.b)):null;
+
+  if(names.length<2){
+    return `<div class="card">
+      <h2>Compare Profiles</h2>
+      <div class="section-note">Add at least two profiles to use comparison.</div>
+      <button class="primary" onclick="activeTab='Profiles';render()">Go to Profiles</button>
+    </div>`;
+  }
+
+  const optionsA=names.map(n=>`<option value="${esc(n)}" ${n===compareA?"selected":""}>${esc(n)}</option>`).join("");
+  const optionsB=names.map(n=>`<option value="${esc(n)}" ${n===compareB?"selected":""}>${esc(n)}</option>`).join("");
+
+  return `<div class="card">
+    <h2>Compare Profiles</h2>
+    <div class="section-note">Choose any two people to compare their profiles, compatibility scores, spiderweb, and forecast analysis.</div>
+
+    <div class="compare-header">
+      <div class="compare-person">
+        <div class="small">Person 1</div>
+        <select class="profile-select" onchange="setCompare('a',this.value)">${optionsA}</select>
+        ${arow?compareMini(arow):""}
+      </div>
+      <div class="compare-vs">VS</div>
+      <div class="compare-person">
+        <div class="small">Person 2</div>
+        <select class="profile-select" onchange="setCompare('b',this.value)">${optionsB}</select>
+        ${brow?compareMini(brow):""}
+      </div>
+    </div>
+
+    <div class="grid kpis" style="margin-bottom:18px">
+      <div class="kpi"><div class="label">${esc(compareA||"Person 1")} average</div><div class="value">${avgA===null?"—":avgA.toFixed(1)}</div></div>
+      <div class="kpi"><div class="label">${esc(compareB||"Person 2")} average</div><div class="value">${avgB===null?"—":avgB.toFixed(1)}</div></div>
+      <div class="kpi"><div class="label">Average gap</div><div class="value">${gapAvg===null?"—":gapAvg.toFixed(1)}</div></div>
+      <div class="kpi"><div class="label">Shared scored categories</div><div class="value">${compared.length}</div></div>
+    </div>
+
+    <div class="compare-profile-row">
+      <div class="card" style="padding:17px;margin:0;background:rgba(255,255,255,.56)">
+        <h3>${esc(compareA||"Person 1")}</h3>
+        <div class="small">${esc(String(arow?.[6]??""))}</div>
+        <div class="small" style="margin-top:4px">${esc(String(arow?.[8]??""))}</div>
+      </div>
+      <div class="card" style="padding:17px;margin:0;background:rgba(255,255,255,.56)">
+        <h3>${esc(compareB||"Person 2")}</h3>
+        <div class="small">${esc(String(brow?.[6]??""))}</div>
+        <div class="small" style="margin-top:4px">${esc(String(brow?.[8]??""))}</div>
+      </div>
+    </div>
+
+    <div class="compare-analysis-grid">
+      <div class="card" style="margin:0">
+        <h2>Spiderweb Comparison</h2>
+        <div class="section-note">Category-by-category compatibility profile</div>
+        <div id="compareRadar" class="compare-chart">${compareRadarSVG(values)}</div>
+      </div>
+      <div class="card forecast-card" style="margin:0">
+        <h2>Forecast Analysis</h2>
+        <div class="section-note">Baseline analysis from available trend and scenario data</div>
+        ${forecastPanel(values)}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>Category Comparison</h2>
+      <div class="section-note">Blank values remain blank and are not treated as zero.</div>
+      <div class="table-wrap">
+        <table class="compare-table">
+          <thead><tr>
+            <th>Category</th>
+            <th>${esc(compareA||"Person 1")}</th>
+            <th>${esc(compareB||"Person 2")}</th>
+            <th>Gap</th>
+          </tr></thead>
+          <tbody>
+            ${values.map(x=>`<tr>
+              <td>${esc(x.name)}</td>
+              <td class="compare-score">${x.a===null?"—":x.a}</td>
+              <td class="compare-score">${x.b===null?"—":x.b}</td>
+              <td>${x.a===null||x.b===null?"—":Math.abs(x.a-x.b).toFixed(1)}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+      ${compared.length
+        ? `<div class="section-note" style="margin-top:12px">Score source: Spider Chart Data.</div>`
+        : `<div class="empty" style="margin-top:14px">No shared score data is available for this pair yet.</div>`}
+    </div>
+  </div>`;
+}
+
+function dashboard(){
+  const rows=scores();
+  const spider=db["Spider Chart Data"]?.rows || [];
+  const chartA=spider.map(r=>valNum(r[1])).filter(x=>x!==null);
+  const chartP=spider.map(r=>valNum(r[2])).filter(x=>x!==null);
+  const alya=rows.map(r=>valNum(r[8])).filter(x=>x!==null);
+  const puteri=rows.map(r=>valNum(r[9])).filter(x=>x!==null);
+  const alyaScore=chartA.length?avg(chartA):avg(alya);
+  const puteriScore=chartP.length?avg(chartP):avg(puteri);
+  const gaps=rows.map(r=>({name:r[0],gap:valNum(r[6]),importance:valNum(r[1])})).filter(x=>x.gap!==null);
+  const scenario=db["Scenario Study"].rows.map(r=>({name:r[0]+" "+r[1],a:valNum(r[3]),p:valNum(r[4])})).filter(x=>x.a!==null||x.p!==null);
+  const profileCount=db.Profiles.rows.length, catCount=db.Categories.rows.length;
+  return `<div class="notice">Use the tabs to enter or edit data. <b>Save Data</b> stores your changes in this browser; <b>Generate Report</b> creates a print-ready report from the current data.</div>
+  <div class="grid">
+    <div class="card kpi"><div class="label">Profiles</div><div class="value">${profileCount}</div><div class="hint">People currently in the study</div></div>
+    <div class="card kpi"><div class="label">Categories</div><div class="value">${catCount}</div><div class="hint">Relationship dimensions</div></div>
+    <div class="card kpi"><div class="label">Alya weighted score</div><div class="value">${alyaScore===null?"—":alyaScore.toFixed(1)+"/10"}</div><div class="hint">Calculated from completed score pairs</div></div>
+    <div class="card kpi"><div class="label">Puteri weighted score</div><div class="value">${puteriScore===null?"—":puteriScore.toFixed(1)+"/10"}</div><div class="hint">Calculated from completed score pairs</div></div>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="card chart-card"><h2>Spiderweb</h2><div class="section-note">Alya vs Puteri • 0–10 scale</div><div id="radarChart" class="chart-stage">
+      <div style="display:flex;justify-content:center;gap:18px;margin-top:8px;font-size:12px;color:#6e6e73">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#0071e3;margin-right:6px"></span>Alya</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#af52de;margin-right:6px"></span>Puteri</span>
+      </div></div></div>
+    <div class="card chart-card"><h2>Category Comparison</h2><div class="section-note">Alya vs Puteri • 0–10 scale</div><div id="barChart" class="chart-stage"></div></div>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="card"><h2>Gap Analysis</h2>${gaps.length?`<div class="list">${gaps.map(x=>`<div class="listrow"><span>${esc(x.name)} <small>(gap ${x.gap.toFixed(1)})</small></span><div class="bar"><i style="width:${Math.min(100,x.gap*10)}%"></i></div></div>`).join("")}</div>`:`<div class="empty">Enter self and partner scores in Score Matrix to populate this analysis.</div>`}</div>
+    <div class="card"><h2>Scenario Study</h2>${scenario.length?`<div class="list">${scenario.map(x=>`<div class="listrow"><span>${esc(x.name)}</span><span>${x.a??"—"} / ${x.p??"—"}</span></div>`).join("")}</div>`:`<div class="empty">Add scenario scores to see the comparison.</div>`}</div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Automatic Analytics</h2><div id="analyticsText" class="empty">Calculating analysis…</div></div>
+  <div class="card" style="margin-top:14px">
+    <h2>Compare Profiles</h2>
+    <p style="font-size:13px;color:#6e6e73;margin-top:0">Choose any two people and review their profile details and score differences side by side.</p>
+    <button class="primary" onclick="activeTab='Comparison';render()">Open Comparison</button>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. You can enter it directly in the corresponding table. Use <b>＋ Add Data</b> for new rows and <b>Delete</b> for rows you no longer need.</p></div>`;
+}
+function render(){
+  document.getElementById("nav").innerHTML=tabs.map(t=>`<button class="${activeTab===t?"active":""}" onclick="activeTab='${t}';render()">${t}</button>`).join("");
+  let content="";
+  if(activeTab==="Dashboard") content=dashboard();
+  else if(activeTab==="Profiles") content=profilesPage();
+  else if(activeTab==="Comparison") content=comparisonPage();
+  else content=`<div class="card"><div class="toolbar"><div><h2 style="margin:0">${activeTab}</h2><div class="muted">${activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":""}</div></div></div>${renderTable(activeTab)}</div>`;
+  document.getElementById("app").innerHTML=content;
+  if(activeTab==="Dashboard") setTimeout(drawCharts,0);
+}
+function reportHTML(){
+  const rows=scores(), alya=avg(rows.map(r=>valNum(r[8])).filter(x=>x!==null)), puteri=avg(rows.map(r=>valNum(r[9])).filter(x=>x!==null));
+  const profiles=db.Profiles.rows.filter(r=>r[1]).map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+  const scoreRows=rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]??""}</td><td>${r[6]??""}</td><td>${r[7]??""}</td><td>${r[8]??""}</td><td>${r[9]??""}</td></tr>`).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Relationship Compatibility Report</title><style>
+  body{font-family:Arial,sans-serif;color:#172033;padding:35px}h1{margin-bottom:4px}h2{margin-top:28px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f1f3f7}.k{display:inline-block;width:30%;padding:12px;border:1px solid #ddd;margin:4px;border-radius:8px}.muted{color:#667085}@media print{body{padding:15px}}</style></head><body>
+  <h1>Relationship Compatibility Study Report</h1><div class="muted">Generated ${new Date().toLocaleString()}</div>
+  <div><div class="k"><b>Alya</b><br>${alya===null?"Not enough completed scores":alya.toFixed(1)+"/10"}</div><div class="k"><b>Puteri</b><br>${puteri===null?"Not enough completed scores":puteri.toFixed(1)+"/10"}</div></div>
+  <h2>Profiles</h2><table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profiles}</table>
+  <h2>Score Matrix</h2><table><tr><th>Category</th><th>Importance</th><th>Alya Gap</th><th>Puteri Gap</th><th>Alya Weighted</th><th>Puteri Weighted</th></tr>${scoreRows}</table>
+  <p class="muted">This report is a descriptive data summary. Blank fields remain blank and calculated values depend on completed inputs.</p>
+  <script>window.onload=()=>window.print();<\/script></body></html>`;
+}
+function generateReport(){
+  const w=window.open("","_blank");
+  if(!w){alert("Please allow pop-ups for this dashboard.");return;}
+  w.document.write(reportHTML());w.document.close();
+}
+
+
+function chartData(){
+  const spider = db["Spider Chart Data"]?.rows || [];
+  const out = [];
+  spider.forEach(r=>{
+    const name = String(r?.[0] ?? "").trim();
+    const a = valNum(r?.[1]);
+    const p = valNum(r?.[2]);
+    if(name && (a!==null || p!==null)) out.push({name,a,p});
+  });
+  return out;
+}
+function shortLabel(s,n=14){
+  s=String(s||"");
+  return s.length>n ? s.slice(0,n-1)+"…" : s;
+}
+function renderRadarSVG(data){
+  const el=document.getElementById("radarChart");
+  if(!el) return;
+  if(!data.length){
+    el.innerHTML="<div class='empty' style='padding:40px;text-align:center'>Enter scores in Spider Chart Data to display the chart.</div>";
+    return;
+  }
+  const w=720,h=390,cx=360,cy=190,R=128;
+  const n=data.length;
+  const ring=[2,4,6,8,10];
+  const angle=i=>(-Math.PI/2)+(i*2*Math.PI/n);
+  const pt=(i,v)=>{
+    const a=angle(i), rr=R*(v/10);
+    return [cx+rr*Math.cos(a), cy+rr*Math.sin(a)];
+  };
+  const polyPts=(v)=>data.map((_,i)=>pt(i,v)).map(p=>p.join(",")).join(" ");
+  const dataPts=(key)=>data.map((d,i)=>pt(i,d[key]??0)).map(p=>p.join(",")).join(" ");
+  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Relationship compatibility spider chart">`;
+  s+=`<rect width="100%" height="100%" fill="transparent"/>`;
+  // grid
+  ring.forEach(v=>{
+    s+=`<polygon points="${polyPts(v)}" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="${v===10?1.2:1}"/>`;
+  });
+  // spokes + labels
+  data.forEach((d,i)=>{
+    const [x,y]=pt(i,10);
+    const [lx,ly]=pt(i,11.2);
+    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(0,0,0,.07)" stroke-width="1"/>`;
+    let anchor="middle";
+    if(lx<cx-10) anchor="end";
+    if(lx>cx+10) anchor="start";
+    const dy=ly<cy?0:5;
+    s+=`<text x="${lx}" y="${ly+dy}" text-anchor="${anchor}" font-size="11" fill="#6e6e73">${esc(shortLabel(d.name,16))}</text>`;
+  });
+  // scale labels
+  ring.forEach(v=>{
+    const [x,y]=pt(0,v);
+    s+=`<text x="${x+6}" y="${y-3}" font-size="9" fill="#86868b">${v}</text>`;
+  });
+  // datasets
+  s+=`<polygon points="${dataPts("a")}" fill="rgba(0,113,227,.12)" stroke="#0071e3" stroke-width="2.4" stroke-linejoin="round"/>`;
+  s+=`<polygon points="${dataPts("p")}" fill="rgba(175,82,222,.10)" stroke="#af52de" stroke-width="2.4" stroke-linejoin="round"/>`;
+  data.forEach((d,i)=>{
+    if(d.a!==null){let [x,y]=pt(i,d.a);s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="#0071e3" stroke="#fff" stroke-width="1.5"/>`;}
+    if(d.p!==null){let [x,y]=pt(i,d.p);s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="#af52de" stroke="#fff" stroke-width="1.5"/>`;}
+  });
+  s+=`</svg>`;
+  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span></div>`;
+}
+function renderBarSVG(data){
+  const el=document.getElementById("barChart");
+  if(!el) return;
+  if(!data.length){
+    el.innerHTML="<div class='empty' style='padding:40px;text-align:center'>Enter scores in Spider Chart Data to display the chart.</div>";
+    return;
+  }
+  const w=720,h=390,left=48,right=18,top=24,bottom=78;
+  const innerW=w-left-right, innerH=h-top-bottom;
+  const max=10, groupW=innerW/data.length, barGap=5, bw=Math.min(20,(groupW-18)/2);
+  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Relationship compatibility bar chart">`;
+  // grid + y labels
+  [0,2,4,6,8,10].forEach(v=>{
+    const y=top+innerH-(v/max)*innerH;
+    s+=`<line x1="${left}" y1="${y}" x2="${w-right}" y2="${y}" stroke="rgba(0,0,0,.08)" stroke-width="1"/>`;
+    s+=`<text x="${left-10}" y="${y+4}" text-anchor="end" font-size="10" fill="#86868b">${v}</text>`;
+  });
+  s+=`<line x1="${left}" y1="${top}" x2="${left}" y2="${top+innerH}" stroke="rgba(0,0,0,.10)"/>`;
+  s+=`<line x1="${left}" y1="${top+innerH}" x2="${w-right}" y2="${top+innerH}" stroke="rgba(0,0,0,.10)"/>`;
+  data.forEach((d,i)=>{
+    const center=left+groupW*i+groupW/2;
+    const ax=center-bw-barGap/2;
+    const px=center+barGap/2;
+    const ah=d.a==null?0:(d.a/max)*innerH;
+    const ph=d.p==null?0:(d.p/max)*innerH;
+    if(d.a!=null){
+      const y=top+innerH-ah;
+      s+=`<rect x="${ax}" y="${y}" width="${bw}" height="${ah}" rx="6" fill="#0071e3"/>`;
+      s+=`<text x="${ax+bw/2}" y="${Math.max(14,y-6)}" text-anchor="middle" font-size="10" fill="#1d1d1f">${d.a}</text>`;
+    }
+    if(d.p!=null){
+      const y=top+innerH-ph;
+      s+=`<rect x="${px}" y="${y}" width="${bw}" height="${ph}" rx="6" fill="#af52de"/>`;
+      s+=`<text x="${px+bw/2}" y="${Math.max(14,y-6)}" text-anchor="middle" font-size="10" fill="#1d1d1f">${d.p}</text>`;
+    }
+    const label=shortLabel(d.name,12);
+    s+=`<text x="${center}" y="${top+innerH+22}" text-anchor="middle" font-size="10" fill="#6e6e73">${esc(label)}</text>`;
+  });
+  s+=`</svg>`;
+  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span></div>`;
+}
+function drawCharts(){
+  if(activeTab!=="Dashboard") return;
+  const data=chartData();
+  renderRadarSVG(data);
+  renderBarSVG(data);
+
+  const at=document.getElementById("analyticsText");
+  if(!at)return;
+  const complete=data.filter(x=>x.a!==null&&x.p!==null);
+  if(!complete.length){
+    at.innerHTML="<div class='empty'>Complete both Alya and Puteri scores for at least one category to generate analytics.</div>";
+    return;
+  }
+  const gaps=complete.map(x=>({name:x.name,gap:Math.abs(x.a-x.p),avg:(x.a+x.p)/2})).sort((a,b)=>b.gap-a.gap);
+  const strengths=[...gaps].sort((a,b)=>b.avg-a.avg).slice(0,3);
+  const priorities=[...gaps].slice(0,3);
+  const agreement=100-(gaps.reduce((s,x)=>s+x.gap,0)/gaps.length)*10;
+  at.innerHTML=`<div class="analytics">
+    <div class="insight"><div class="title">Agreement index</div><div class="text">${Math.max(0,agreement).toFixed(0)}%</div></div>
+    <div class="insight"><div class="title">Shared strengths</div><div class="text">${strengths.map(x=>esc(x.name)).join(" · ")}</div></div>
+    <div class="insight"><div class="title">Largest gaps</div><div class="text">${priorities.map(x=>esc(x.name)+" ("+x.gap.toFixed(1)+")").join(" · ")}</div></div>
+  </div>`;
+}
+
+render();
+setTimeout(drawCharts,80);
+initOnline();
+</script>
+</body></html>
