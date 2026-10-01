@@ -687,7 +687,7 @@ td input:focus,td select:focus,td textarea:focus{
 <header>
   <h1>Relationship Compatibility</h1>
   <div class="subtitle">Editable master data • calculated compatibility metrics • online save • printable report</div>
-  <div id="authArea" style="margin:12px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
+  <div id="authArea" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;color:var(--secondary);font-size:12px"></div>
   <div class="actions">
     <button class="primary" onclick="saveData()">Save Data</button>
     <button class="green" onclick="generateReport()">📄 Generate Report</button>
@@ -701,8 +701,7 @@ td input:focus,td select:focus,td textarea:focus{
 const SUPABASE_URL = "https://xxcarudbbsoojimgvcue.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cldPfBr69w35IbFAHtnWPg_hsz9zUP5";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-let currentOnlineUser = null;
-
+let onlineSession = null;
 const INITIAL = {"Instructions": {"headers": ["RELATIONSHIP COMPATIBILITY STUDY — MASTER DATA TEMPLATE", null, null, null, null, null], "rows": [["Purpose", null, null, null, null, null], ["Use this workbook to enter relationship-study data before the interactive HTML dashboard is generated.", null, null, null, null, null], ["Profiles", "Enter one person per row in the Profiles sheet. Add unlimited profiles later.", null, null, null, null], ["Categories", "Edit/add relationship dimensions and set importance from 1–10.", null, null, null, null], ["Scores", "Use 1–10. For stronger analysis, enter both self-perception and partner-perception.", null, null, null, null], ["Importance", "Rate how important each dimension is to the relationship from 1–10.", null, null, null, null], ["Gap", "The HTML will calculate the absolute difference between perceptions.", null, null, null, null], ["Scenarios", "Rate expected responses to realistic relationship situations.", null, null, null, null], ["Monthly Trend", "Enter repeated scores over time to study improvement or decline.", null, null, null, null], ["Notes", "Use notes for concrete examples/evidence behind a score.", null, null, null, null]]}, "Categories": {"headers": ["Category ID", "Category", "Importance (1-10)", "Description / What to assess"], "rows": [["C01", "Communication", 10, "Clarity, listening, openness, difficult conversations"], ["C02", "Trust & Security", 10, "Honesty, reliability, trust, emotional safety"], ["C03", "Understanding", 9, "Understanding personality, needs, boundaries and feelings"], ["C04", "Affection & Love Language", 8, "Attention, appreciation, affection and preferred love language"], ["C05", "Conflict Handling", 10, "Disagreements, repair, compromise and problem solving"], ["C06", "Fun & Lifestyle Compatibility", 7, "Hobbies, social style, routines and activities"], ["C07", "Mutual Support", 9, "Support during stress, study, work and personal challenges"], ["C08", "Future Alignment", 10, "Marriage, career, children, location and long-term goals"], ["C09", "Family Compatibility", 8, "Family expectations, boundaries and relationships"], ["C10", "Financial Compatibility", 9, "Saving, spending, debt and financial priorities"], ["C11", "Emotional Resilience", 8, "Stress response, emotional regulation and recovery"], ["C12", "Chemistry & Romance", 8, "Romantic connection, attraction and closeness"], ["C13", "Personal Growth", 7, "Whether both people encourage healthy growth"], ["C14", "Values & Principles", 10, "Core values, ethics, priorities and life principles"], ["C15", "Marriage / Daily Life", 10, "Household roles, responsibilities and lifestyle expectations"], ["C16", "Education & Learning Compatibility", 7, "Education background, learning interests, further-study goals and support for each other's development"]]}, "Profiles": {"headers": ["Profile ID", "Name", "Age", "Birthday", "Occupation / Study", "Education", "Personality", "Interests", "Strengths", "Things to Improve", "Relationship Notes"], "rows": [["P01", "Alya", 29, "1997-11-27", "freelancer", "Masters In Visual Comunication", "Caring/ Attachment Issue", "Art/ Cute things ?/ F1", "5 star Hospitality", "Parent issue ", "Good if her mom okay "], ["P02", "Puteri", 30, "1/27/96", "Procument", "Masters in Sustainable", "Avoident/ Indipendent", "Art/ Cute things ?/ Concert/ Outdoor Activity", "Sekufu Family / Inteligent/ ", "Lack of sense of humor/ too much independent", "SO/SO"]]}, "Score Matrix": {"headers": ["Category", "Importance", "Alya - Self Score", "Alya - Partner Score", "Puteri - Self Score", "Puteri - Partner Score", "Alya Gap", "Puteri Gap", "Alya Weighted", "Puteri Weighted", "Study Notes"], "rows": [["Communication", 10, null, null, null, null, null, null, null, null, null], ["Trust & Security", 10, null, null, null, null, null, null, null, null, null], ["Understanding", 9, null, null, null, null, null, null, null, null, null], ["Affection & Love Language", 8, null, null, null, null, null, null, null, null, null], ["Conflict Handling", 10, null, null, null, null, null, null, null, null, null], ["Fun & Lifestyle Compatibility", 7, null, null, null, null, null, null, null, null, null], ["Mutual Support", 9, null, null, null, null, null, null, null, null, null], ["Future Alignment", 10, null, null, null, null, null, null, null, null, null], ["Family Compatibility", 8, null, null, null, null, null, null, null, null, null], ["Financial Compatibility", 9, null, null, null, null, null, null, null, null, null], ["Emotional Resilience", 8, null, null, null, null, null, null, null, null, null], ["Chemistry & Romance", 8, null, null, null, null, null, null, null, null, null], ["Personal Growth", 7, null, null, null, null, null, null, null, null, null], ["Values & Principles", 10, null, null, null, null, null, null, null, null, null], ["Marriage / Daily Life", 10, null, null, null, null, null, null, null, null, null], ["Education & Learning Compatibility", 7, null, null, null, null, null, null, null, null, null]]}, "Scenario Study": {"headers": ["Scenario ID", "Scenario", "Dimension Tested", "Alya Response Score (1-10)", "Puteri Response Score (1-10)", "Importance", "Alya Notes", "Puteri Notes"], "rows": [["S01", "One person loses their job for 6 months", "Financial / Support", 10, 5, null, null, null], ["S02", "One person receives a job offer in another state", "Career / Compromise", 10, 10, null, null, null], ["S03", "Family members disagree with an important decision", "Family / Conflict", 2, 10, null, null, null], ["S04", "Unexpected RM10,000 emergency expense", "Finance / Problem Solving", 2, 2, null, null, null], ["S05", "One person needs significant emotional support", "Emotional / Support", 4, 4, null, null, null], ["S06", "Planning marriage within 1–2 years", "Future / Marriage", 3, 10, null, null, null], ["S07", "Different opinions about having children", "Values / Future", 5, 3, null, null, null], ["S08", "Different preferred living location", "Lifestyle / Future", 10, 5, null, null, null], ["S09", "One person wants to change career direction", "Career / Growth", 10, 3, null, null, null], ["S10", "Major disagreement about spending or saving", "Finance / Conflict", 2, 1, null, null, null]]}, "Monthly Trend": {"headers": ["Date", "Profile", "Communication", "Trust", "Affection", "Conflict Handling", "Future Alignment", "Family", "Education", "Finance", "Overall Notes"], "rows": []}, "Future & Finance": {"headers": ["Area", "Topic", "Alya Position / Target", "Puteri Position / Target", "Importance (1-10)", "Alignment Notes"], "rows": [["Marriage", "Target marriage timeframe", null, null, null, null], ["Marriage", "Preferred wedding budget", null, null, null, null], ["Children", "Want children?", null, null, null, null], ["Children", "Number of children", null, null, null, null], ["Location", "Preferred state/city", null, null, null, null], ["Career", "Career priority", null, null, null, null], ["Finance", "Saving philosophy", null, null, null, null], ["Finance", "Spending philosophy", null, null, null, null], ["Finance", "Debt tolerance", null, null, null, null], ["Finance", "Emergency fund target", null, null, null, null], ["Lifestyle", "Preferred daily routine", null, null, null, null], ["Family", "Family involvement / boundaries", null, null, null, null], ["Home", "Living arrangement", null, null, null, null], ["Values", "Core principles", null, null, null, null], ["Education", "Education / Learning goals", null, null, null, null]]}, "Dashboard Setup": {"headers": ["Module", "Planned Analysis", "Input Sheet", "Ready for HTML?"], "rows": [["Overview", "Overall score, weighted score, strengths, gaps, priority areas", "See relevant input sheet", "YES"], ["Compatibility", "Dual radar: self-perception vs partner-perception", "See relevant input sheet", "YES"], ["Gap Analysis", "Category-by-category disagreement and gap severity", "See relevant input sheet", "YES"], ["Priority Matrix", "Importance vs compatibility gap", "See relevant input sheet", "YES"], ["Personality", "Profile information, interests, values and lifestyle", "See relevant input sheet", "YES"], ["Future Planning", "Marriage, children, career, location and lifestyle alignment", "See relevant input sheet", "YES"], ["Financial", "Saving, spending and financial-goal compatibility", "See relevant input sheet", "YES"], ["Scenario Test", "Real-life hypothetical scenario analysis", "See relevant input sheet", "YES"], ["Relationship Trend", "Monthly score trends over time", "See relevant input sheet", "YES"], ["Profile Manager", "Add/delete/edit unlimited profiles and photos", "See relevant input sheet", "YES"], ["Education & Growth", "Education level, learning goals, career-development alignment", "Profiles + Future & Finance", "YES"]]}, "Spider Chart Data": {"headers": ["Category", "Alya", "Puteri", "Notes / Reason"], "rows": [["Communication", 9, 5, ""], ["Trust", 4, 3, ""], ["Affection", 6, 4, ""], ["Understanding", 8, 4, ""], ["Conflict Handling", 4, 1, ""], ["Fun & Compatibility", 10, 10, ""], ["Support", 10, 10, ""], ["Future Alignment", 8, 10, ""], ["Family Compatibility", 3, 5, ""], ["Financial Compatibility", 3, 7, ""]]}};
 let db = JSON.parse(localStorage.getItem("relationshipDashboardData") || "null") || INITIAL;
 let activeTab = "Dashboard";
@@ -725,82 +724,83 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function isBlank(v){return v===null||v===undefined||v==="";}
 function valNum(v){let n=parseFloat(v);return Number.isFinite(n)?n:null;}
 async function saveData(silent=false){
-  localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
-  if(!currentOnlineUser){
-    if(!silent) alert("Saved locally. Sign in to save this dashboard online.");
-    return;
-  }
   try{
-    const payload={...db,__schemaVersion:2};
-    const {error}=await supabaseClient.from("relationship_dashboards").upsert({
-      owner_id:currentOnlineUser.id,
-      data:payload,
-      updated_at:new Date().toISOString()
-    },{onConflict:"owner_id"});
+    localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
+    if(!onlineSession){
+      if(!silent) alert("Saved in this browser. Sign in to save your dashboard online.");
+      return;
+    }
+    const payload=JSON.parse(JSON.stringify(db));
+    payload.__onlineSavedAt=new Date().toISOString();
+    const {error}=await supabaseClient
+      .from("relationship_dashboards")
+      .upsert({owner_id:onlineSession.user.id,data:payload},{onConflict:"owner_id"});
     if(error) throw error;
-    if(!silent) alert("Saved online successfully.");
+    if(!silent) alert("Saved online. Your latest dashboard data is stored in your account.");
   }catch(err){
     console.error("Online save failed",err);
-    if(!silent) alert("Saved locally, but online save failed: "+err.message);
+    if(!silent) alert("Browser save completed, but online save failed: "+(err?.message||err));
   }
 }
-
 function renderAuthArea(user){
-  currentOnlineUser=user||null;
   const el=document.getElementById("authArea");
   if(!el)return;
   if(user){
-    el.innerHTML=`<span class="badge">Online</span><span class="small">${esc(user.email||"")}</span><button class="small" onclick="saveData()">☁ Save Online</button><button class="small danger" onclick="signOutOnline()">Sign Out</button>`;
+    const email=String(user.email||"Signed in").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    el.innerHTML=`<span>☁️ Online: ${email}</span><button class="small" onclick="signOutOnline()">Sign Out</button>`;
   }else{
-    el.innerHTML=`<button class="small" onclick="showAuthForm('signin')">Sign In</button><button class="small" onclick="showAuthForm('signup')">Create Account</button><span class="small">Sign in to save across devices.</span>`;
+    el.innerHTML=`<span>☁️ Online save:</span><button class="small" onclick="signInOnline()">Sign In</button><button class="small" onclick="signUpOnline()">Create Account</button>`;
   }
 }
-
-function showAuthForm(mode){
-  const title=mode==="signup"?"Create Account":"Sign In";
-  const action=mode==="signup"?createOnlineAccount:signInOnline;
-  const email=prompt(title+"\n\nEmail:");
-  if(email===null)return;
-  const password=prompt("Password (minimum 6 characters):");
-  if(password===null)return;
-  action(email.trim(),password);
-}
-
-async function signInOnline(email,password){
-  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+async function signInOnline(){
+  const email=prompt("Email:");
+  if(!email)return;
+  const password=prompt("Password:");
+  if(!password)return;
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email:email.trim(),password});
   if(error){alert("Sign in failed: "+error.message);return;}
-  currentOnlineUser=data.user;
-  renderAuthArea(currentOnlineUser);
-  await loadOnlineData(currentOnlineUser.id);
+  onlineSession=data.session||null;
+  renderAuthArea(onlineSession?.user||null);
+  if(onlineSession) await loadOnlineData(onlineSession.user.id);
 }
-
-async function createOnlineAccount(email,password){
-  if(password.length<6){alert("Password must be at least 6 characters.");return;}
-  const {data,error}=await supabaseClient.auth.signUp({email,password});
+async function signUpOnline(){
+  const email=prompt("Email:");
+  if(!email)return;
+  const password=prompt("Create a password (minimum 6 characters):");
+  if(!password)return;
+  const {data,error}=await supabaseClient.auth.signUp({email:email.trim(),password});
   if(error){alert("Account creation failed: "+error.message);return;}
   if(data?.session){
-    currentOnlineUser=data.user;
-    renderAuthArea(currentOnlineUser);
-    await loadOnlineData(currentOnlineUser.id);
+    onlineSession=data.session;
+    renderAuthArea(onlineSession.user);
+    await loadOnlineData(onlineSession.user.id);
     alert("Account created and signed in.");
   }else{
     alert("Account created. Check your email to confirm the account, then sign in.");
   }
 }
-
 async function signOutOnline(){
   const {error}=await supabaseClient.auth.signOut();
   if(error){alert("Sign out failed: "+error.message);return;}
-  currentOnlineUser=null;
+  onlineSession=null;
   renderAuthArea(null);
 }
-
 async function loadOnlineData(userId){
   try{
-    const {data,error}=await supabaseClient.from("relationship_dashboards").select("data,updated_at").eq("owner_id",userId).maybeSingle();
-    if(error)throw error;
-    if(data?.data && typeof data.data === "object"){
-      db=data.data;
+    const {data,error}=await supabaseClient
+      .from("relationship_dashboards")
+      .select("data,updated_at")
+      .eq("owner_id",userId)
+      .maybeSingle();
+    if(error) throw error;
+    const remote=data?.data;
+    const looksValid=remote && typeof remote==="object" &&
+      remote.Instructions && remote.Categories && remote.Profiles &&
+      remote["Score Matrix"] && remote["Scenario Study"] &&
+      remote["Monthly Trend"] && remote["Future & Finance"] &&
+      remote["Dashboard Setup"] && remote["Spider Chart Data"];
+    if(looksValid){
+      db=remote;
       db.__profilePhotos=db.__profilePhotos||{};
       db.__comparison=db.__comparison||{};
       localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
@@ -811,25 +811,23 @@ async function loadOnlineData(userId){
     console.error("Online load failed",err);
   }
 }
-
 async function initOnline(){
   try{
+    if(!window.supabase?.createClient) throw new Error("Supabase library did not load.");
     const {data:{session}}=await supabaseClient.auth.getSession();
-    renderAuthArea(session?.user||null);
-    if(session?.user){
-      currentOnlineUser=session.user;
-      await loadOnlineData(session.user.id);
-    }
+    onlineSession=session||null;
+    renderAuthArea(onlineSession?.user||null);
+    if(onlineSession) await loadOnlineData(onlineSession.user.id);
     supabaseClient.auth.onAuthStateChange((_event,nextSession)=>{
-      renderAuthArea(nextSession?.user||null);
-      currentOnlineUser=nextSession?.user||null;
-      if(nextSession?.user) setTimeout(()=>loadOnlineData(nextSession.user.id),0);
+      onlineSession=nextSession||null;
+      renderAuthArea(onlineSession?.user||null);
     });
   }catch(err){
     console.error("Supabase initialization failed",err);
     renderAuthArea(null);
   }
 }
+
 function exportJSON(){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="relationship_dashboard_backup.json";a.click();URL.revokeObjectURL(a.href);
@@ -997,7 +995,8 @@ function profileCard(row,index){
 function profilesPage(){
   const rows=profileRows();
   return `<div class="card">
-    <div class="profile-toolbar">      <div><h2 style="margin-bottom:3px">Profiles</h2><div class="section-note" style="margin:0">Build a clean profile for each person. Add a photo and keep the detailed fields editable below.</div></div>
+    <div class="profile-toolbar">
+      <div><h2 style="margin-bottom:3px">Profiles</h2><div class="section-note" style="margin:0">Build a clean profile for each person. Add a photo and keep the detailed fields editable below.</div></div>
       <button class="primary" onclick="addRow('Profiles')">＋ Add Profile</button>
     </div>
     <div class="profile-grid">
@@ -1105,8 +1104,7 @@ function scenarioRowsForCompare(){
 }
 function buildForecast(values){
   const complete=values.filter(x=>x.a!==null&&x.b!==null);
-  const currentA=complete.length?avg(complete.map(x=>x.a)):null;
-  const currentB=complete.length?avg(complete.map(x=>x.b)):null;
+  const currentA=complete.length?avg(complete.map(x=>x.a)):null;  const currentB=complete.length?avg(complete.map(x=>x.b)):null;
   const avgGap=complete.length?avg(complete.map(x=>Math.abs(x.a-x.b))):null;
 
   // Prefer real Monthly Trend data when it exists.
