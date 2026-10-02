@@ -721,7 +721,7 @@ td input:focus,td select:focus,td textarea:focus{
 .compare-dataset-legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:9px;color:var(--secondary);font-size:12px}
 .compare-dataset-legend span{display:inline-flex;align-items:center;gap:6px}
 .compare-dataset-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.interactive-tip{font-size:11px;color:var(--secondary);margin-top:7px}
+.profile-analytics-grid{align-items:stretch}.profile-radar-box,.profile-bar-box{padding:8px 8px 2px}.profile-switcher select{min-width:260px}.multi-compare-chart .compare-dataset-legend{position:relative;z-index:2}.compare-dataset-legend{border-top:1px solid rgba(0,0,0,.05);padding-top:9px}..interactive-tip{font-size:11px;color:var(--secondary);margin-top:7px}
 @media(max-width:900px){.profile-analytics-grid{grid-template-columns:1fr}.multi-compare-grid{grid-template-columns:1fr}.profile-switcher{grid-template-columns:1fr}}
 @media(max-width:520px){.profile-metric-grid{grid-template-columns:1fr 1fr 1fr;gap:7px}.auth-card{padding:22px}.multi-compare-chart{height:400px}}
 
@@ -775,7 +775,7 @@ db.__profilePhotos["Puteri"] = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABA
 db.__comparison = db.__comparison || {};
 
 
-const tabs = ["Dashboard","Profiles","Comparison","Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance","Spider Chart Data","Dashboard Setup"];
+const tabs = ["Dashboard","Profiles","Profile View","Comparison","Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance","Spider Chart Data","Dashboard Setup"];
 const editableSheets = ["Profiles","Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance","Dashboard Setup"];
 const calcCols = {"Score Matrix":[6,7,8,9]};
 
@@ -1253,10 +1253,12 @@ function dashboard(){
   <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. You can enter it directly in the corresponding table. Use <b>＋ Add Data</b> for new rows and <b>Delete</b> for rows you no longer need.</p></div>`;
 }
 function render(){
+  ensureProfileColumnsForAll();
   document.getElementById("nav").innerHTML=tabs.map(t=>`<button class="${activeTab===t?"active":""}" onclick="activeTab='${t}';render()">${t}</button>`).join("");
   let content="";
   if(activeTab==="Dashboard") content=dashboard();
   else if(activeTab==="Profiles") content=profilesPage();
+  else if(activeTab==="Profile View") content=profileViewPage();
   else if(activeTab==="Comparison") content=comparisonPage();
   else content=`<div class="card"><div class="toolbar"><div><h2 style="margin:0">${activeTab}</h2><div class="muted">${activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":""}</div></div></div>${renderTable(activeTab)}</div>`;
   document.getElementById("app").innerHTML=content;
@@ -1483,7 +1485,7 @@ function svgSingleProfileRadar(name){
   s+=`<polygon points="${pts}" fill="rgba(0,113,227,.12)" stroke="#0071e3" stroke-width="3" stroke-linejoin="round"/>`;
   data.forEach((d,i)=>{const [x,y]=pt(i,d.value);s+=`<circle cx="${x}" cy="${y}" r="5" fill="#0071e3" stroke="#fff" stroke-width="2"><title>${esc(d.name)}: ${d.value}/10</title></circle>`;});
   s+=`<text x="20" y="25" font-size="11" fill="#6e6e73">${esc(name)} • 0–10 scale</text></svg>`;
-  return s;
+  return s+`<div class="compare-dataset-legend"><span><i style="background:#0071e3"></i>${esc(name)}</span></div>`;
 }
 function svgSingleProfileBars(name){
   const data=profileScenarioData(name).filter(x=>x.value!==null);
@@ -1492,7 +1494,7 @@ function svgSingleProfileBars(name){
   let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
   [0,2,4,6,8,10].forEach(v=>{const y=top+innerH-v/10*innerH;s+=`<line x1="${left}" y1="${y}" x2="${w-right}" y2="${y}" stroke="rgba(0,0,0,.08)"/><text x="${left-10}" y="${y+4}" text-anchor="end" font-size="10" fill="#86868b">${v}</text>`;});
   data.forEach((d,i)=>{const x=left+i*groupW+(groupW-bw)/2,hgt=d.value/10*innerH,y=top+innerH-hgt;s+=`<rect x="${x}" y="${y}" width="${bw}" height="${hgt}" rx="7" fill="#af52de"><title>${esc(d.name)}: ${d.value}/10</title></rect><text x="${x+bw/2}" y="${Math.max(14,y-6)}" text-anchor="middle" font-size="10" fill="#1d1d1f">${d.value}</text><text x="${x+bw/2}" y="${top+innerH+22}" text-anchor="middle" font-size="10" fill="#6e6e73">${esc(shortLabel(d.name,18))}</text>`;});
-  s+=`</svg>`;return s;
+  s+=`</svg>`;return s+`<div class="compare-dataset-legend"><span><i style="background:#af52de"></i>${esc(name)}</span></div>`;
 }
 function profileAnalyticsHtml(name){
   const row=profileByName(name);
