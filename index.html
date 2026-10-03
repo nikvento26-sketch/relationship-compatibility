@@ -1956,7 +1956,7 @@ function svgDumbbell(nameA,nameB){
   data.forEach((d,i)=>{const y=top+i*rowH+9,xa=px(d.a),xb=px(d.b);s+='<text x="8" y="'+(y+4)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.name,29))+'</text><line x1="'+Math.min(xa,xb)+'" y1="'+y+'" x2="'+Math.max(xa,xb)+'" y2="'+y+'" stroke="#c7c9cf" stroke-width="5" stroke-linecap="round"/><circle cx="'+xa+'" cy="'+y+'" r="6" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(nameA)+': '+d.a+'/10</title></circle><circle cx="'+xb+'" cy="'+y+'" r="6" fill="#af52de" stroke="#fff" stroke-width="2"><title>'+esc(nameB)+': '+d.b+'/10</title></circle>';});
   s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
 }
-function svgFutureFinanceReadiness(){
+function safeChart(()=>svgFutureFinanceReadiness(),'Future & Finance Planning'){
   const rows=db["Future & Finance"]?.rows||[];
   if(!rows.length)return '<div class="empty analytics-empty">Add Future & Finance rows to unlock planning analysis.</div>';
   const areas=[...new Set(rows.map(r=>String(r?.[0]||"").trim()).filter(Boolean))];
@@ -1965,6 +1965,14 @@ function svgFutureFinanceReadiness(){
   let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   data.forEach((d,i)=>{const y=top+i*rowH;s+='<text x="8" y="'+(y+18)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.area,20))+'</text><rect x="'+left+'" y="'+(y+6)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+6)+'" width="'+(barW*d.a/100)+'" height="8" rx="4" fill="#0071e3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+(barW*d.p/100)+'" height="8" rx="4" fill="#af52de"/><text x="'+(w-2)+'" y="'+(y+13)+'" text-anchor="end" font-size="10" fill="#667085">Alya '+d.a.toFixed(0)+'%</text><text x="'+(w-2)+'" y="'+(y+29)+'" text-anchor="end" font-size="10" fill="#667085">Puteri '+d.p.toFixed(0)+'%</text>';});
   s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span><em>Shows data completion, not outcome alignment.</em></div>';
+}
+function safeChart(fn,title){
+  try{
+    return fn();
+  }catch(err){
+    console.error("Chart failed:",title,err);
+    return '<div class="empty analytics-empty"><strong>'+esc(title)+'</strong><br>Chart could not be rendered. Your source data is unchanged.</div>';
+  }
 }
 function dashboard(){
   const rows=scores();
@@ -2014,8 +2022,8 @@ function dashboard(){
   "</div>";
 
   const charts="<div class=\"grid2\" style=\"margin-top:14px\">"+
-    "<div class=\"card chart-card\"><div class=\"dashboard-spider-toolbar\"><div><h2 style=\"margin-bottom:3px\">Spiderweb</h2><div class=\"section-note\" style=\"margin:0\">One profile at a time • 0–10 scale</div></div><select onchange=\"dashboardProfileName=this.value;render()\" aria-label=\"Select profile for spiderweb\">"+options+"</select></div><div id=\"radarChart\" class=\"chart-stage\">"+(dashboardProfileName?svgSingleProfileRadar(dashboardProfileName):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view the spiderweb.</div>")+"</div></div>"+
-    "<div class=\"card chart-card\"><h2>Selected Profile Scenarios</h2><div class=\"section-note\">Only "+esc(dashboardProfileName||"the selected profile")+" is shown</div><div id=\"barChart\" class=\"chart-stage\">"+(dashboardProfileName?svgSingleProfileBars(dashboardProfileName):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view scenario scores.</div>")+"</div></div>"+
+    "<div class=\"card chart-card\"><div class=\"dashboard-spider-toolbar\"><div><h2 style=\"margin-bottom:3px\">Spiderweb</h2><div class=\"section-note\" style=\"margin:0\">One profile at a time • 0–10 scale</div></div><select onchange=\"dashboardProfileName=this.value;render()\" aria-label=\"Select profile for spiderweb\">"+options+"</select></div><div id=\"radarChart\" class=\"chart-stage\">"+(dashboardProfileName?safeChart(()=>svgSingleProfileRadar(dashboardProfileName),'Spiderweb'):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view the spiderweb.</div>")+"</div></div>"+
+    "<div class=\"card chart-card\"><h2>Selected Profile Scenarios</h2><div class=\"section-note\">Only "+esc(dashboardProfileName||"the selected profile")+" is shown</div><div id=\"barChart\" class=\"chart-stage\">"+(dashboardProfileName?safeChart(()=>svgSingleProfileBars(dashboardProfileName),'Scenario Response'):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view scenario scores.</div>")+"</div></div>"+
   "</div>";
 
   const gapsHtml=gaps.length?"<div class=\"list\">"+gaps.map(x=>"<div class=\"listrow\"><span>"+esc(x.name)+" <small>(gap "+x.gap.toFixed(1)+")</small></span><div class=\"bar\"><i style=\"width:"+Math.min(100,x.gap*10)+"%\"></i></div></div>").join("")+"</div>":"<div class=\"empty\">Enter self and partner scores in Score Matrix to populate this analysis.</div>";
@@ -2031,34 +2039,25 @@ function dashboard(){
     safety;
 }
 function render(){
-  ensureProfileColumnsForAll();
-  const dataItems=["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"];
-  const toolItems=["Spider Chart Data","Dashboard Setup"];
-  const makeMenu=(key,label,items)=>`<div class="menu-wrap">
-    <button class="menu-trigger ${items.includes(activeTab)||openMenu===key?"active":""}" onclick="toggleMenu('${key}')">${label}<span class="menu-chevron">${openMenu===key?"▴":"▾"}</span></button>
-    <div class="menu-panel ${openMenu===key?"visible":""}">
-      ${items.map(t=>`<button class="menu-option ${activeTab===t?"active":""}" onclick="selectMenuItem('${t}')">${t}</button>`).join("")}
-    </div>
-  </div>`;
-  document.getElementById("nav").innerHTML=`<div class="subnav-inner">
-    <div class="subnav-label">Workspace</div>
-    <div class="subnav-links">
-      ${makeMenu("data","Data",dataItems)}
-      ${makeMenu("tools","Tools",toolItems)}
-      <button class="subnav-link" onclick="activeTab='Dashboard';openMenu=null;render()">Quick overview</button>
-    </div>
-    <div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div>
-  </div>`;
-  let content="";
-  if(activeTab==="Dashboard") content=dashboard();
-  else if(activeTab==="Profiles") content=profilesPage();
-  else if(activeTab==="Profile View") content=profileViewPage();
-  else if(activeTab==="Comparison") content=comparisonPage();
-  else content=`<div class="card"><div class="toolbar"><div><h2 style="margin:0">${activeTab}</h2><div class="muted">${activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":""}</div></div></div>${renderTable(activeTab)}</div>`;
-  document.getElementById("app").innerHTML=content;
-  if(activeTab==="Dashboard") setTimeout(drawDashboardAnalytics,0);
+  try{
+    ensureProfileColumnsForAll();
+    const dataItems=["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"];
+    const toolItems=["Spider Chart Data","Dashboard Setup"];
+    const makeMenu=(key,label,items)=>'<div class="menu-wrap"><button class="menu-trigger '+(items.includes(activeTab)||openMenu===key?'active':'')+'" onclick="toggleMenu(\''+key+'\')">'+label+'<span class="menu-chevron">'+(openMenu===key?'▴':'▾')+'</span></button><div class="menu-panel '+(openMenu===key?'visible':'')+'">'+items.map(t=>'<button class="menu-option '+(activeTab===t?'active':'')+'" onclick="selectMenuItem(\''+t+'\')">'+t+'</button>').join('')+'</div></div>';
+    document.getElementById("nav").innerHTML='<div class="subnav-inner"><div class="subnav-label">Workspace</div><div class="subnav-links">'+makeMenu("data","Data",dataItems)+makeMenu("tools","Tools",toolItems)+'<button class="subnav-link" onclick="activeTab=\'Dashboard\';openMenu=null;render()">Quick overview</button></div><div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div></div>';
+    let content="";
+    if(activeTab==="Dashboard") content=dashboard();
+    else if(activeTab==="Profiles") content=profilesPage();
+    else if(activeTab==="Profile View") content=profileViewPage();
+    else if(activeTab==="Comparison") content=comparisonPage();
+    else content='<div class="card"><div class="toolbar"><div><h2 style="margin:0">'+esc(activeTab)+'</h2><div class="muted">'+(activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":"")+'</div></div></div>'+renderTable(activeTab)+'</div>';
+    document.getElementById("app").innerHTML=content;
+    if(activeTab==="Dashboard") setTimeout(drawDashboardAnalytics,0);
+  }catch(err){
+    console.error("Dashboard render failed:",err);
+    document.getElementById("app").innerHTML='<div class="card" style="margin:24px"><h2>Dashboard needs a refresh</h2><p class="section-note">The original data is still preserved. Use the button below to restore the dashboard view.</p><button class="primary" onclick="openMenu=null;render()">Refresh Dashboard</button><button style="margin-left:8px" onclick="resetToOriginalData()">Reset to Original Data</button><details style="margin-top:16px"><summary>Technical details</summary><pre style="white-space:pre-wrap;font-size:11px;color:#667085">'+esc(String(err?.stack||err))+'</pre></details></div>';
+  }
 }
-
 function drawDashboardAnalytics(){
   if(activeTab!=="Dashboard") return;
   const at=document.getElementById("analyticsText");
