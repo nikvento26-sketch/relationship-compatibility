@@ -1666,8 +1666,16 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
 <div id="reportOptionsModal" class="report-modal" onclick="if(event.target===this)closeReportOptions()">
   <div class="report-card">
     <h3>Generate report</h3>
-    <div class="section-note" style="margin-bottom:0">Choose which profile data to include in the printable report.</div>
+    <div class="section-note" style="margin-bottom:0">Choose the profile report, then optionally compare two profiles in the Spiderweb chart.</div>
     <div id="reportOptionsList" class="report-options"></div>
+    <label class="report-option" style="margin-top:8px">
+      <input id="reportSpiderCompare" type="checkbox" onchange="toggleReportSpiderCompare()">
+      <div><strong>Compare 2 profiles in Spiderweb</strong><span>Overlay two profiles on the same radar chart with a clear legend.</span></div>
+    </label>
+    <div id="reportSpiderCompareFields" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <label class="small">Profile 1<select id="reportSpiderA" style="width:100%;margin-top:4px"></select></label>
+      <label class="small">Profile 2<select id="reportSpiderB" style="width:100%;margin-top:4px"></select></label>
+    </div>
     <div class="report-actions">
       <button onclick="closeReportOptions()">Cancel</button>
       <button class="primary" onclick="confirmReportGeneration()">Generate</button>
@@ -2461,7 +2469,7 @@ function drawDashboardAnalytics(){
   at.innerHTML=`<div class="analytics"><div class="insight"><div class="title">Selected profile</div><div class="text">${esc(name)}</div></div><div class="insight"><div class="title">Top strengths</div><div class="text">${strengths.map(x=>esc(x.name)+" ("+x.value+")").join(" · ")}</div></div><div class="insight"><div class="title">Focus areas</div><div class="text">${gaps.map(x=>esc(x.name)+" ("+x.value+")").join(" · ")}</div></div></div>`;
 }
 
-function reportHTML(scope="all"){
+function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
   const names=profileNamesEnhanced();
   const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
   const profiles=selected.map(name=>profileByName(name)).filter(Boolean);
@@ -2487,7 +2495,7 @@ function reportHTML(scope="all"){
         <div class="report-chart-grid">
           ${reportChart("1. Horizontal Category Score","Category scores.",svgCategoryScoreBars(name),"chart-card")}
           ${reportChart("2. Importance vs Score Scatter","Importance compared with score.",svgImportanceScoreScatter(name),"chart-card")}
-          ${reportChart("3. Spiderweb","Profile category shape.",svgSingleProfileRadar(name),"chart-card")}
+          ${reportChart("3. Spiderweb"+(spiderCompareA&&spiderCompareB?" Comparison":""),spiderCompareA&&spiderCompareB?"Two-profile category comparison.":"Profile category shape.",spiderCompareA&&spiderCompareB?svgCompareProfileRadar(spiderCompareA,spiderCompareB):svgSingleProfileRadar(name),"chart-card")}
           ${reportChart("4. Scenario Horizontal Bars","Scenario responses.",svgSingleProfileBars(name),"chart-card")}
           ${reportChart("5. Monthly Trend Line","Monthly trend.",trendReport(name),"chart-card")}
         </div>
@@ -2515,17 +2523,29 @@ function openReportOptions(){
   const list=document.getElementById("reportOptionsList");
   if(!list)return;
   const names=profileNamesEnhanced();
-  const options=[`<label class="report-option"><input type="radio" name="reportScope" value="all" checked><div><strong>All profiles</strong><span>Generate one report containing everyone currently in the dashboard.</span></div></label>`].concat(names.map(n=>`<label class="report-option"><input type="radio" name="reportScope" value="${esc(n)}"><div><strong>${esc(n)} only</strong><span>Generate the report for ${esc(n)} without the other profiles.</span></div></label>`));
+  const options=[\`<label class="report-option"><input type="radio" name="reportScope" value="all" checked><div><strong>All profiles</strong><span>Generate one report containing everyone currently in the dashboard.</span></div></label>\`].concat(names.map(n=>\`<label class="report-option"><input type="radio" name="reportScope" value="\${esc(n)}"><div><strong>\${esc(n)} only</strong><span>Generate the report for \${esc(n)} without the other profiles.</span></div></label>\`));
   list.innerHTML=options.join("");
+  const a=document.getElementById("reportSpiderA"),b=document.getElementById("reportSpiderB");
+  if(a&&b){const opts=names.map(n=>\`<option value="\${esc(n)}">\${esc(n)}</option>\`).join("");a.innerHTML=opts;b.innerHTML=opts;if(names[1])b.value=names[1];}
+  const cb=document.getElementById("reportSpiderCompare"); if(cb)cb.checked=false;
+  const fields=document.getElementById("reportSpiderCompareFields"); if(fields)fields.style.display="none";
   document.getElementById("reportOptionsModal")?.classList.add("open");
+}
+function toggleReportSpiderCompare(){
+  const cb=document.getElementById("reportSpiderCompare"),fields=document.getElementById("reportSpiderCompareFields");
+  if(fields)fields.style.display=cb?.checked?"grid":"none";
 }
 function closeReportOptions(){document.getElementById("reportOptionsModal")?.classList.remove("open");}
 function confirmReportGeneration(){
   const choice=document.querySelector('input[name="reportScope"]:checked')?.value||"all";
+  const compare=document.getElementById("reportSpiderCompare")?.checked;
+  const a=document.getElementById("reportSpiderA")?.value||"";
+  const b=document.getElementById("reportSpiderB")?.value||"";
+  if(compare && (!a || !b || a===b)){alert("Please select two different profiles for the Spiderweb comparison.");return;}
   closeReportOptions();
   const w=window.open("","_blank");
   if(!w){alert("Please allow pop-ups for this dashboard.");return;}
-  w.document.write(reportHTML(choice));w.document.close();
+  w.document.write(reportHTML(choice,compare?a:"",compare?b:""));w.document.close();
 }
 function generateReport(scope="all"){
   if(scope) { const w=window.open("","_blank"); if(!w){alert("Please allow pop-ups for this dashboard.");return;} w.document.write(reportHTML(scope)); w.document.close(); }
@@ -2719,6 +2739,29 @@ function profileScenarioData(name){
   const d=db["Scenario Study"]||{};
   const idx=findHeaderIndex(d.headers,name+" Response Score (1-10)");
   return (d.rows||[]).map(r=>({name:String(r?.[1]||r?.[0]||""),value:idx>=0?valNum(r?.[idx]):null})).filter(x=>x.name);
+}
+function svgCompareProfileRadar(nameA,nameB){
+  const a=profileSpiderData(nameA).filter(x=>x.value!==null);
+  const values=[];
+  a.forEach(x=>{
+    const b=profileScoreForCategory(profileByName(nameB),x.name);
+    if(x.value!==null && b!==null) values.push({name:x.name,a:x.value,b});
+  });
+  if(!values.length)return \`<div class="empty" style="padding:50px;text-align:center">No shared Spider Chart Data is available for \${esc(nameA)} and \${esc(nameB)}.</div>\`;
+  const w=760,h=420,cx=380,cy=205,R=145,n=values.length;
+  const angle=i=>(-Math.PI/2)+(i*2*Math.PI/n);
+  const pt=(i,v,rr=R)=>{const aa=angle(i),r=rr*(Math.max(0,Math.min(10,v||0))/10);return [cx+r*Math.cos(aa),cy+r*Math.sin(aa)];};
+  const poly=v=>values.map((_,i)=>pt(i,v)).map(p=>p.join(",")).join(" ");
+  let s=\`<svg viewBox="0 0 \${w} \${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spiderweb comparison of \${esc(nameA)} and \${esc(nameB)}">\`;
+  [2,4,6,8,10].forEach(v=>s+=\`<polygon points="\${poly(v)}" fill="none" stroke="rgba(0,0,0,.08)"/>\`);
+  values.forEach((d,i)=>{const [x,y]=pt(i,10),[lx,ly]=pt(i,11.4);let anchor="middle";if(lx<cx-15)anchor="end";if(lx>cx+15)anchor="start";s+=\`<line x1="\${cx}" y1="\${cy}" x2="\${x}" y2="\${y}" stroke="rgba(0,0,0,.06)"/><text x="\${lx}" y="\${ly+4}" text-anchor="\${anchor}" font-size="11" fill="#6e6e73">\${esc(shortLabel(d.name,18))}</text>\`;});
+  const ptsA=values.map((d,i)=>pt(i,d.a)).map(p=>p.join(",")).join(" ");
+  const ptsB=values.map((d,i)=>pt(i,d.b)).map(p=>p.join(",")).join(" ");
+  s+=\`<polygon points="\${ptsA}" fill="rgba(0,113,227,.12)" stroke="#0071e3" stroke-width="3" stroke-linejoin="round"/>\`;
+  s+=\`<polygon points="\${ptsB}" fill="rgba(175,82,222,.10)" stroke="#af52de" stroke-width="3" stroke-linejoin="round"/>\`;
+  values.forEach((d,i)=>{let [x,y]=pt(i,d.a);s+=\`<circle cx="\${x}" cy="\${y}" r="4.5" fill="#0071e3" stroke="#fff" stroke-width="2"><title>\${esc(nameA)} — \${esc(d.name)}: \${d.a}/10</title></circle>\`;[x,y]=pt(i,d.b);s+=\`<circle cx="\${x}" cy="\${y}" r="4.5" fill="#af52de" stroke="#fff" stroke-width="2"><title>\${esc(nameB)} — \${esc(d.name)}: \${d.b}/10</title></circle>\`;});
+  s+=\`</svg>\`;
+  return s+\`<div class="compare-dataset-legend"><span><i style="background:#0071e3"></i>\${esc(nameA)}</span><span><i style="background:#af52de"></i>\${esc(nameB)}</span><span class="small">Shared categories: \${values.length}</span></div>\`;
 }
 function svgSingleProfileRadar(name){
   const data=profileSpiderData(name).filter(x=>x.value!==null);
