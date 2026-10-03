@@ -1645,7 +1645,7 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
     </div>
     <div id="authBar" class="auth-bar">
       <div class="auth-user"><span class="auth-status"><i id="authDot" class="auth-dot"></i><span id="authState">Local mode</span></span><strong id="authEmail"></strong></div>
-      <div class="auth-actions"><button id="loginButton" class="small" onclick="openFirebaseLogin()" style="display:none">Log In</button><button id="logoutButton" class="small danger" onclick="firebaseLogout()">Log Out</button></div>
+      <div class="auth-actions"><button id="loginButton" class="small" onclick="openFirebaseLogin()" style="display:none">Log In</button><button id="logoutButton" class="small danger" onclick="firebaseLogout()" style="display:none">Log Out</button></div>
     </div>
   </div>
 </header>
@@ -3042,7 +3042,8 @@ function updateAuthUI(user){
   if(email)email.textContent=user?(user.email||""):"";
   if(login)login.style.display=user?"none":"inline-flex";
   if(logout)logout.style.display=user?"inline-flex":"none";
-  if(gate)gate.classList.toggle("open",!user);\n  if(!user && !isConfigured) msg("Firebase is not connected yet. Add your Firebase Web App config to enable login.","error");
+  if(gate)gate.classList.toggle("open",!user);
+  if(!user && !isConfigured) msg("Firebase is not connected yet. Add your Firebase Web App config to enable login.","error");
 }
 
 async function loadCloud(user){
