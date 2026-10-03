@@ -1583,11 +1583,49 @@ function svgSingleProfileRadar(name){
 function svgSingleProfileBars(name){
   const data=profileScenarioData(name).filter(x=>x.value!==null);
   if(!data.length)return `<div class="empty" style="padding:50px;text-align:center">No scenario scores are available for ${esc(name)} yet.</div>`;
-  const w=760,h=420,left=52,right=20,top=25,bottom=95,innerH=h-top-bottom,groupW=(w-left-right)/data.length,bw=Math.min(30,groupW*.55);
-  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
-  [0,2,4,6,8,10].forEach(v=>{const y=top+innerH-v/10*innerH;s+=`<line x1="${left}" y1="${y}" x2="${w-right}" y2="${y}" stroke="rgba(0,0,0,.08)"/><text x="${left-10}" y="${y+4}" text-anchor="end" font-size="10" fill="#86868b">${v}</text>`;});
-  data.forEach((d,i)=>{const x=left+i*groupW+(groupW-bw)/2,hgt=d.value/10*innerH,y=top+innerH-hgt;s+=`<rect x="${x}" y="${y}" width="${bw}" height="${hgt}" rx="7" fill="#af52de"><title>${esc(d.name)}: ${d.value}/10</title></rect><text x="${x+bw/2}" y="${Math.max(14,y-6)}" text-anchor="middle" font-size="10" fill="#1d1d1f">${d.value}</text><text x="${x+bw/2}" y="${top+innerH+22}" text-anchor="middle" font-size="10" fill="#6e6e73">${esc(shortLabel(d.name,18))}</text>`;});
-  s+=`</svg>`;return s+`<div class="compare-dataset-legend"><span><i style="background:#af52de"></i>${esc(name)}</span></div>`;
+
+  const maxLabel=230;
+  const labelLines=data.map(d=>{
+    const words=String(d.name||"").split(/\s+/);
+    const lines=[];
+    let line="";
+    for(const word of words){
+      const test=line?line+" "+word:word;
+      if(test.length>28 && line){lines.push(line);line=word;}else line=test;
+    }
+    if(line)lines.push(line);
+    return lines.slice(0,3);
+  });
+  const labelW=255, left=labelW, right=70, top=20, rowH=48, bottom=22;
+  const w=820, h=top + data.length*rowH + bottom;
+  const barW=w-left-right;
+  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scenario response scores for ${esc(name)}">`;
+
+  // score grid
+  [0,2,4,6,8,10].forEach(v=>{
+    const x=left+(v/10)*barW;
+    s+=`<line x1="${x}" y1="${top-4}" x2="${x}" y2="${h-bottom}" stroke="rgba(0,0,0,.07)" stroke-width="1"/>`;
+    s+=`<text x="${x}" y="${top-8}" text-anchor="middle" font-size="10" fill="#86868b">${v}</text>`;
+  });
+
+  data.forEach((d,i)=>{
+    const y=top+i*rowH+8;
+    const lines=labelLines[i];
+    const barY=y+5;
+    const width=Math.max(4,(d.value/10)*barW);
+    const labelColor="#4b4b50";
+
+    lines.forEach((line,j)=>{
+      s+=`<text x="8" y="${y+10+j*13}" font-size="11" fill="${labelColor}">${esc(line)}</text>`;
+    });
+
+    s+=`<rect x="${left}" y="${barY}" width="${barW}" height="18" rx="9" fill="#f0f0f3"/>`;
+    s+=`<rect x="${left}" y="${barY}" width="${width}" height="18" rx="9" fill="#af52de"><title>${esc(d.name)}: ${d.value}/10</title></rect>`;
+    s+=`<text x="${Math.min(w-6,left+width+8)}" y="${barY+13}" text-anchor="${left+width+45>w?"end":"start"}" font-size="11" font-weight="600" fill="#1d1d1f">${d.value}/10</text>`;
+  });
+
+  s+=`</svg>`;
+  return s+`<div class="compare-dataset-legend"><span><i style="background:#af52de"></i>${esc(name)} — Scenario Response Score</span></div>`;
 }
 function profileAnalyticsHtml(name){
   const row=profileByName(name);
