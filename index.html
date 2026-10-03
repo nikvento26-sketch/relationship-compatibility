@@ -1711,72 +1711,67 @@ function comparisonPage(){
 function dashboard(){
   const rows=scores();
   const gaps=rows.map(r=>({name:r[0],gap:valNum(r[6]),importance:valNum(r[1])})).filter(x=>x.gap!==null);
-  const scenario=db["Scenario Study"]?.rows||[];
-  const profileCount=db.Profiles.rows.length, catCount=db.Categories.rows.length;
+  const scenarioRows=db["Scenario Study"]?.rows||[];
+  const profileCount=db.Profiles?.rows?.length||0;
+  const catCount=db.Categories?.rows?.length||0;
   const names=profileNamesEnhanced();
   if(!dashboardProfileName||!names.includes(dashboardProfileName)) dashboardProfileName=names[0]||"";
   const selectedValues=dashboardProfileName?profileSpiderData(dashboardProfileName).map(x=>x.value).filter(v=>v!==null):[];
   const selectedScenario=dashboardProfileName?profileScenarioData(dashboardProfileName).map(x=>x.value).filter(v=>v!==null):[];
   const selectedAvg=selectedValues.length?avg(selectedValues):null;
   const selectedScenarioAvg=selectedScenario.length?avg(selectedScenario):null;
-  const options=names.map(n=>`<option value="${esc(n)}" ${n===dashboardProfileName?"selected":""}>${esc(n)}</option>`).join("");
-  const scenarioPreview=scenario.map(r=>({name:r[0]+" "+r[1],a:valNum(r[3]),p:valNum(r[4])})).filter(x=>x.a!==null||x.p!==null);
-  return `<section class="creative-hero">
-    <div class="hero-inner">
-      <div>
-        <span class="hero-kicker">RELATIONSHIP COMPATIBILITY STUDIO</span>
-        <div class="hero-title">See your relationship in a clearer way.</div>
-        <div class="hero-copy">Explore one profile at a time, compare people when you need to, and keep your relationship data organized in one friendly workspace.</div>
-        <div class="hero-controls">
-          <select class="hero-select" onchange="dashboardProfileName=this.value;render()" aria-label="Select profile">
-            ${options}
-          </select>
-          <button class="hero-primary" onclick="activeTab='Profile View';selectedProfileName=dashboardProfileName;render()">Open Profile</button>
-          <button onclick="activeTab='Comparison';render()">Compare Profiles</button>
-        </div>
-      </div>
-      <div class="hero-preview">
-        <div class="hero-preview-title"><span>Selected profile</span><strong>${esc(dashboardProfileName||"No profile")}</strong></div>
-        <div class="hero-score">
-          <div class="hero-score-card"><div class="label">Compatibility</div><div class="value">${selectedAvg===null?"—":selectedAvg.toFixed(1)}</div></div>
-          <div class="hero-score-card"><div class="label">Scenario score</div><div class="value">${selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1)}</div></div>
-        </div>
-        <div class="hero-mini-chart" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="notice">Choose a profile in the Spiderweb selector to view <b>only that person's</b> profile scores. Use <b>Comparison</b> when you want 2 or 3 people together.</div>`;
+  const options=names.map(n=>"<option value=\""+esc(n)+"\" "+(n===dashboardProfileName?"selected":"")+">"+esc(n)+"</option>").join("");
+  const scenarioPreview=scenarioRows.map(r=>({name:String(r?.[1]||r?.[0]||""),a:valNum(r?.[3]),p:valNum(r?.[4])})).filter(x=>x.name);
+  const heroScores=selectedValues.length?selectedValues.map(v=>Math.round(v)):[];
+  const heroBars=heroScores.slice(0,9).map((v,i)=>"<span style=\"left:"+(5+i*10)+"%;height:"+(Math.max(20,Math.min(95,v*9)))+"%\"></span>").join("");
 
-  <div class="grid">
-    <div class="card kpi"><div class="label">Profiles</div><div class="value">${profileCount}</div><div class="hint">People currently in the study</div></div>
-    <div class="card kpi"><div class="label">Categories</div><div class="value">${catCount}</div><div class="hint">Relationship dimensions</div></div>
-    <div class="card kpi"><div class="label">${esc(dashboardProfileName||"Selected profile")} average</div><div class="value">${selectedAvg===null?"—":selectedAvg.toFixed(1)+"/10"}</div><div class="hint">Single-profile compatibility view</div></div>
-    <div class="card kpi"><div class="label">Scenario average</div><div class="value">${selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1)+"/10"}</div><div class="hint">Selected profile only</div></div>
-  </div>
-  <div class="grid2" style="margin-top:14px">
-    <div class="card chart-card">
-      <div class="dashboard-spider-toolbar">
-        <div><h2 style="margin-bottom:3px">Spiderweb</h2><div class="section-note" style="margin:0">One profile at a time • 0–10 scale</div></div>
-        <select onchange="dashboardProfileName=this.value;render()" aria-label="Select profile for spiderweb">${options}</select>
-      </div>
-      <div id="radarChart" class="chart-stage">${dashboardProfileName?svgSingleProfileRadar(dashboardProfileName):`<div class='empty' style='padding:50px;text-align:center'>Add a profile to view the spiderweb.</div>`}</div>
-    </div>
-    <div class="card chart-card"><h2>Selected Profile Scenarios</h2><div class="section-note">Only ${esc(dashboardProfileName||"the selected profile")} is shown</div><div id="barChart" class="chart-stage">${dashboardProfileName?svgSingleProfileBars(dashboardProfileName):`<div class='empty' style='padding:50px;text-align:center'>Add a profile to view scenario scores.</div>`}</div></div>
-  </div>
-  <div class="grid2" style="margin-top:14px">
-    <div class="card"><h2>Gap Analysis</h2>${gaps.length?`<div class="list">${gaps.map(x=>`<div class="listrow"><span>${esc(x.name)} <small>(gap ${x.gap.toFixed(1)})</small></span><div class="bar"><i style="width:${Math.min(100,x.gap*10)}%"></i></div></div>`).join("")}</div>`:`<div class="empty">Enter self and partner scores in Score Matrix to populate this analysis.</div>`}</div>
-    <div class="card"><h2>Scenario Study</h2>${scenarioPreview.length?`<div class="list">${scenarioPreview.slice(0,5).map(x=>`<div class="listrow"><span>${esc(x.name)}</span><span>${x.a??"—"} / ${x.p??"—"}</span></div>`).join("")}</div>`:`<div class="empty">Add scenario scores to see the comparison.</div>`}</div>
-  </div>
-  <div class="card" style="margin-top:14px"><h2>Automatic Analytics</h2><div id="analyticsText" class="empty">Calculating analysis…</div></div>
-  <div class="card" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h2 style="margin-bottom:3px">Compare Profiles</h2><p style="font-size:13px;color:#6e6e73;margin:0">Compare 2 or 3 people with their own chart lines and legend.</p></div><button class="primary" onclick="activeTab='Comparison';render()">Open Comparison</button></div></div>
-  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. Edit data from the relevant tab.</p></div><div class="data-safety-card">
-  <div class="copy"><strong>Data backup</strong><br>Your original master data is embedded in this website. Use Reset only when you need to restore the original uploaded dataset.</div>
-  <button class="small" onclick="resetToOriginalData()">Reset to Original Data</button>
-</div>`;
+  const hero="<section class=\"creative-hero\">"+
+    "<div class=\"hero-inner\">"+
+      "<div>"+
+        "<span class=\"hero-kicker\">RELATIONSHIP COMPATIBILITY STUDIO</span>"+
+        "<div class=\"hero-title\">See your relationship in a clearer way.</div>"+
+        "<div class=\"hero-copy\">Explore one profile at a time, compare people when you need to, and keep your relationship data organized in one friendly workspace.</div>"+
+        "<div class=\"hero-controls\">"+
+          "<select class=\"hero-select\" onchange=\"dashboardProfileName=this.value;render()\" aria-label=\"Select profile\">"+options+"</select>"+
+          "<button class=\"hero-primary\" onclick=\"activeTab='Profile View';selectedProfileName=dashboardProfileName;render()\">Open Profile</button>"+
+          "<button onclick=\"activeTab='Comparison';render()\">Compare Profiles</button>"+
+        "</div>"+
+      "</div>"+
+      "<div class=\"hero-preview\">"+
+        "<div class=\"hero-preview-title\"><span>Selected profile</span><strong>"+esc(dashboardProfileName||"No profile")+"</strong></div>"+
+        "<div class=\"hero-score\">"+
+          "<div class=\"hero-score-card\"><div class=\"label\">Compatibility</div><div class=\"value\">"+(selectedAvg===null?"—":selectedAvg.toFixed(1))+"</div></div>"+
+          "<div class=\"hero-score-card\"><div class=\"label\">Scenario score</div><div class=\"value\">"+(selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1))+"</div></div>"+
+        "</div>"+
+        "<div class=\"hero-mini-chart\" aria-hidden=\"true\">"+heroBars+"</div>"+
+      "</div>"+
+    "</div>"+
+  "</section>";
+
+  const kpis="<div class=\"grid\">"+
+    "<div class=\"card kpi\"><div class=\"label\">Profiles</div><div class=\"value\">"+profileCount+"</div><div class=\"hint\">People currently in the study</div></div>"+
+    "<div class=\"card kpi\"><div class=\"label\">Categories</div><div class=\"value\">"+catCount+"</div><div class=\"hint\">Relationship dimensions</div></div>"+
+    "<div class=\"card kpi\"><div class=\"label\">"+esc(dashboardProfileName||"Selected profile")+" average</div><div class=\"value\">"+(selectedAvg===null?"—":selectedAvg.toFixed(1)+"/10")+"</div><div class=\"hint\">Single-profile compatibility view</div></div>"+
+    "<div class=\"card kpi\"><div class=\"label\">Scenario average</div><div class=\"value\">"+(selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1)+"/10")+"</div><div class=\"hint\">Selected profile only</div></div>"+
+  "</div>";
+
+  const charts="<div class=\"grid2\" style=\"margin-top:14px\">"+
+    "<div class=\"card chart-card\"><div class=\"dashboard-spider-toolbar\"><div><h2 style=\"margin-bottom:3px\">Spiderweb</h2><div class=\"section-note\" style=\"margin:0\">One profile at a time • 0–10 scale</div></div><select onchange=\"dashboardProfileName=this.value;render()\" aria-label=\"Select profile for spiderweb\">"+options+"</select></div><div id=\"radarChart\" class=\"chart-stage\">"+(dashboardProfileName?svgSingleProfileRadar(dashboardProfileName):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view the spiderweb.</div>")+"</div></div>"+
+    "<div class=\"card chart-card\"><h2>Selected Profile Scenarios</h2><div class=\"section-note\">Only "+esc(dashboardProfileName||"the selected profile")+" is shown</div><div id=\"barChart\" class=\"chart-stage\">"+(dashboardProfileName?svgSingleProfileBars(dashboardProfileName):"<div class='empty' style='padding:50px;text-align:center'>Add a profile to view scenario scores.</div>")+"</div></div>"+
+  "</div>";
+
+  const gapsHtml=gaps.length?"<div class=\"list\">"+gaps.map(x=>"<div class=\"listrow\"><span>"+esc(x.name)+" <small>(gap "+x.gap.toFixed(1)+")</small></span><div class=\"bar\"><i style=\"width:"+Math.min(100,x.gap*10)+"%\"></i></div></div>").join("")+"</div>":"<div class=\"empty\">Enter self and partner scores in Score Matrix to populate this analysis.</div>";
+  const scenarioHtml=scenarioPreview.length?"<div class=\"list\">"+scenarioPreview.slice(0,6).map(x=>"<div class=\"listrow\"><span>"+esc(x.name)+"</span><span>"+(x.a??"—")+" / "+(x.p??"—")+"</span></div>").join("")+"</div>":"<div class=\"empty\">Add scenario scores to see the comparison.</div>";
+  const safety="<div class=\"data-safety-card\"><div class=\"copy\"><strong>Data backup</strong><br>Your original master data is embedded in this website.</div><button class=\"small\" onclick=\"resetToOriginalData()\">Reset to Original Data</button></div>";
+
+  return hero+
+    "<div class=\"notice\">Choose a profile in the Spiderweb selector to view <b>only that person's</b> profile scores. Use <b>Comparison</b> when you want 2 or 3 people together.</div>"+
+    kpis+charts+
+    "<div class=\"grid2\" style=\"margin-top:14px\"><div class=\"card\"><h2>Gap Analysis</h2>"+gapsHtml+"</div><div class=\"card\"><h2>Scenario Study</h2>"+scenarioHtml+"</div></div>"+
+    "<div class=\"card\" style=\"margin-top:14px\"><h2>Automatic Analytics</h2><div id=\"analyticsText\" class=\"empty\">Calculating analysis…</div></div>"+
+    "<div class=\"card\" style=\"margin-top:14px\"><div style=\"display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap\"><div><h2 style=\"margin-bottom:3px\">Compare Profiles</h2><p style=\"font-size:13px;color:#6e6e73;margin:0\">Compare 2 or 3 people with their own chart lines and legend.</p></div><button class=\"primary\" onclick=\"activeTab='Comparison';render()\">Open Comparison</button></div></div>"+
+    safety;
 }
-
 function render(){
   ensureProfileColumnsForAll();
   const navGroups=[
