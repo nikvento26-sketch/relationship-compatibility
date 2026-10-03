@@ -393,7 +393,7 @@ td input:focus,td select:focus,td textarea:focus{
   height:100%;
   display:block;
 }
-.chart-legend{
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px}.chart-legend{
   display:flex;
   justify-content:center;
   gap:18px;
@@ -2037,7 +2037,7 @@ function compareRadarSVG(values,nameA=compareA,nameB=compareB){
   s+=`<g font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif">
     <text x="20" y="24" font-size="11" fill="#6e6e73">0–10 compatibility scale</text>
   </g></svg>`;
-  return s + `<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>${esc(nameA||"Person 1")}</span><span><i class="legend-dot legend-puterI"></i>${esc(nameB||"Person 2")}</span></div>`;
+  return s + `<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>${esc(nameA||"Person 1")}</span><span><i class="legend-dot" style="background:#af52de"></i>${esc(nameB||"Person 2")}</span></div>`;
 }
 function trendRows(){
   const t=db["Monthly Trend"]?.rows||[];
@@ -2130,7 +2130,7 @@ function svgCompareCategoryBars(nameA,nameB){
     if(d.b!==null){const ww=Math.max(3,d.b/10*barW);s+='<rect x="'+left+'" y="'+(y+23)+'" width="'+ww+'" height="14" rx="7" fill="#af52de"/><text x="'+Math.min(w-6,left+ww+7)+'" y="'+(y+34)+'" font-size="10" font-weight="700" fill="#af52de">'+d.b+'</text>';}
   });
   s+='</svg>';
-  return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+  return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(nameA)+'</span><span><i class="legend-dot" style="background:#af52de"></i>'+esc(nameB)+'</span></div>';
 }
 function svgCompareImportanceScatter(nameA,nameB){
   const cats=(db.Categories?.rows||[]).map(r=>({name:String(r?.[1]||""),importance:valNum(r?.[2])})).filter(x=>x.name&&x.importance!==null);
@@ -2147,7 +2147,7 @@ function svgCompareImportanceScatter(nameA,nameB){
     if(d.b!==null){const x=px(d.importance),y=py(d.b);s+='<circle cx="'+x+'" cy="'+y+'" r="7" fill="#af52de" stroke="#fff" stroke-width="2"><title>'+esc(nameB)+' • '+esc(d.name)+' • Importance '+d.importance+' • Score '+d.b+'</title></circle>';}
   });
   s+='<text x="'+w/2+'" y="'+(h-2)+'" text-anchor="middle" font-size="11" fill="#667085">Importance (1–10)</text><text x="14" y="'+h/2+'" transform="rotate(-90 14 '+h/2+')" text-anchor="middle" font-size="11" fill="#667085">Score (1–10)</text></svg>';
-  return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+  return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(nameA)+'</span><span><i class="legend-dot" style="background:#af52de"></i>'+esc(nameB)+'</span></div>';
 }
 function svgCompareScenarioBars(nameA,nameB){
   const oldA=compareA,oldB=compareB; compareA=nameA;compareB=nameB;
@@ -2161,7 +2161,7 @@ function svgCompareScenarioBars(nameA,nameB){
     if(d.a!==null){const ww=Math.max(3,d.a/10*barW);s+='<rect x="'+left+'" y="'+(y+4)+'" width="'+ww+'" height="14" rx="7" fill="#0071e3"/><text x="'+Math.min(w-5,left+ww+7)+'" y="'+(y+15)+'" font-size="10" font-weight="700" fill="#0071e3">'+d.a+'</text>';}
     if(d.b!==null){const ww=Math.max(3,d.b/10*barW);s+='<rect x="'+left+'" y="'+(y+22)+'" width="'+ww+'" height="14" rx="7" fill="#af52de"/><text x="'+Math.min(w-5,left+ww+7)+'" y="'+(y+33)+'" font-size="10" font-weight="700" fill="#af52de">'+d.b+'</text>';}
   });
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(nameA)+'</span><span><i class="legend-dot" style="background:#af52de"></i>'+esc(nameB)+'</span></div>';
 }
 function svgCompareTrendLine(nameA,nameB){
   const a=trendFor(nameA),b=trendFor(nameB);
@@ -2175,7 +2175,7 @@ function svgCompareTrendLine(nameA,nameB){
   const draw=(map,color,name)=>{const pts=periods.map((p,i)=>map.has(p)?[px(i),py(map.get(p))]:null).filter(Boolean);if(pts.length<1)return; if(pts.length>1)s+='<polyline points="'+pts.map(p=>p.join(",")).join(" ")+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';pts.forEach((p,i)=>s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="'+color+'" stroke="#fff" stroke-width="2"/>');};
   draw(mapA,"#0071e3",nameA);draw(mapB,"#af52de",nameB);
   periods.forEach((p,i)=>s+='<text x="'+px(i)+'" y="'+(h-20)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+esc(shortLabel(p,12))+'</text>');
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(nameA)+'</span><span><i class="legend-dot" style="background:#af52de"></i>'+esc(nameB)+'</span></div>';
 }
 function comparisonPage(){
   const names=profileNames(); getCompareSelections();
@@ -2215,7 +2215,7 @@ function svgCategoryScoreBars(name){
   let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   [0,2,4,6,8,10].forEach(v=>{const x=left+v/10*barW;s+='<line x1="'+x+'" y1="'+(top-4)+'" x2="'+x+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.06)"/><text x="'+x+'" y="14" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
   data.forEach((d,i)=>{const y=top+i*rowH,width=Math.max(4,d.value/10*barW);s+='<text x="8" y="'+(y+16)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.name,29))+'</text><rect x="'+left+'" y="'+(y+5)+'" width="'+barW+'" height="16" rx="8" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+5)+'" width="'+width+'" height="16" rx="8" fill="#0071e3"/><text x="'+Math.min(w-6,left+width+8)+'" y="'+(y+17)+'" font-size="11" font-weight="700" fill="#1d1d1f">'+d.value+'/10</text>';});
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+'</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(name)+'</span></div>';
 }
 function svgImportanceScoreScatter(name){
   const cats=(db.Categories?.rows||[]).map(r=>({name:String(r?.[1]||""),importance:valNum(r?.[2])})).filter(x=>x.name&&x.importance!==null);
@@ -2279,7 +2279,7 @@ function svgTrendLine(name){
   [0,2,4,6,8,10].forEach(v=>{s+='<line x1="'+left+'" y1="'+py(v)+'" x2="'+(w-right)+'" y2="'+py(v)+'" stroke="rgba(0,0,0,.06)"/><text x="'+(left-9)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="10" fill="#98a2b3">'+v+'</text>';});
   const pts=data.map((d,i)=>px(i)+","+py(d.value)).join(" ");s+='<polyline points="'+pts+'" fill="none" stroke="#0071e3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
   data.forEach((d,i)=>{s+='<circle cx="'+px(i)+'" cy="'+py(d.value)+'" r="4.5" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(d.period)+': '+d.value.toFixed(1)+'/10</title></circle><text x="'+px(i)+'" y="'+(h-22)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+esc(shortLabel(d.period,11))+'</text>';});
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+' trend</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(name)+' trend</span></div>';
 }
 function compareValuesFor(nameA,nameB){
   const headers=db["Spider Chart Data"]?.headers||[],rows=db["Spider Chart Data"]?.rows||[],ai=findHeaderIndex(headers,nameA),bi=findHeaderIndex(headers,nameB);
@@ -2291,7 +2291,7 @@ function svgGapHeatmap(nameA,nameB){
   const cols=Math.min(5,Math.max(1,data.length)),cellW=155,cellH=74,w=cols*cellW+30,rows=Math.ceil(data.length/cols),h=rows*cellH+42;
   let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   data.forEach((d,i)=>{const col=i%cols,row=Math.floor(i/cols),x=15+col*cellW,y=30+row*cellH,alpha=.08+d.gap/10*.45;s+='<rect x="'+x+'" y="'+y+'" width="'+(cellW-8)+'" height="'+(cellH-8)+'" rx="12" fill="rgba(175,82,222,'+alpha.toFixed(2)+')" stroke="rgba(0,0,0,.05)"/><text x="'+(x+10)+'" y="'+(y+20)+'" font-size="10" font-weight="600" fill="#475467">'+esc(shortLabel(d.name,21))+'</text><text x="'+(x+10)+'" y="'+(y+46)+'" font-size="20" font-weight="800" fill="#1d1d1f">'+d.gap.toFixed(1)+'</text><text x="'+(x+52)+'" y="'+(y+44)+'" font-size="10" fill="#667085">gap</text>';});
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-puterI"></i>Higher opacity = larger score gap</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#af52de"></i>Higher opacity = larger score gap</span></div>';
 }
 function svgDumbbell(nameA,nameB){
   const data=compareValuesFor(nameA,nameB).filter(x=>x.a!==null&&x.b!==null).sort((a,b)=>Math.max(b.a,b.b)-Math.max(a.a,a.b));
@@ -2300,7 +2300,7 @@ function svgDumbbell(nameA,nameB){
   let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   [0,2,4,6,8,10].forEach(v=>{const x=px(v);s+='<line x1="'+x+'" y1="'+(top-5)+'" x2="'+x+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.05)"/><text x="'+x+'" y="14" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
   data.forEach((d,i)=>{const y=top+i*rowH+9,xa=px(d.a),xb=px(d.b);s+='<text x="8" y="'+(y+4)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.name,29))+'</text><line x1="'+Math.min(xa,xb)+'" y1="'+y+'" x2="'+Math.max(xa,xb)+'" y2="'+y+'" stroke="#c7c9cf" stroke-width="5" stroke-linecap="round"/><circle cx="'+xa+'" cy="'+y+'" r="6" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(nameA)+': '+d.a+'/10</title></circle><circle cx="'+xb+'" cy="'+y+'" r="6" fill="#af52de" stroke="#fff" stroke-width="2"><title>'+esc(nameB)+': '+d.b+'/10</title></circle>';});
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>'+esc(nameA)+'</span><span><i class="legend-dot" style="background:#af52de"></i>'+esc(nameB)+'</span></div>';
 }
 function svgFutureFinanceReadiness(){
   const rows=db["Future & Finance"]?.rows||[];
@@ -2310,7 +2310,7 @@ function svgFutureFinanceReadiness(){
   const w=820,rowH=46,left=150,right=20,top=28,bottom=18,h=top+data.length*rowH+bottom,barW=w-left-right;
   let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   data.forEach((d,i)=>{const y=top+i*rowH;s+='<text x="8" y="'+(y+18)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.area,20))+'</text><rect x="'+left+'" y="'+(y+6)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+6)+'" width="'+(barW*d.a/100)+'" height="8" rx="4" fill="#0071e3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+(barW*d.p/100)+'" height="8" rx="4" fill="#af52de"/><text x="'+(w-2)+'" y="'+(y+13)+'" text-anchor="end" font-size="10" fill="#667085">Alya '+d.a.toFixed(0)+'%</text><text x="'+(w-2)+'" y="'+(y+29)+'" text-anchor="end" font-size="10" fill="#667085">Puteri '+d.p.toFixed(0)+'%</text>';});
-  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span><em>Shows data completion, not outcome alignment.</em></div>';
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>Alya</span><span><i class="legend-dot" style="background:#af52de"></i>Puteri</span><em>Shows data completion, not outcome alignment.</em></div>';
 }
 function safeChart(fn,title){
   try{
@@ -2623,7 +2623,7 @@ function renderRadarSVG(data){
     if(d.p!==null){let [x,y]=pt(i,d.p);s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="#af52de" stroke="#fff" stroke-width="1.5"/>`;}
   });
   s+=`</svg>`;
-  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span></div>`;
+  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>Alya</span><span><i class="legend-dot" style="background:#af52de"></i>Puteri</span></div>`;
 }
 function renderBarSVG(data){
   const el=document.getElementById("barChart");
@@ -2664,7 +2664,7 @@ function renderBarSVG(data){
     s+=`<text x="${center}" y="${top+innerH+22}" text-anchor="middle" font-size="10" fill="#6e6e73">${esc(label)}</text>`;
   });
   s+=`</svg>`;
-  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span></div>`;
+  el.innerHTML=s+`<div class="chart-legend"><span><i class="legend-dot" style="background:#0071e3"></i>Alya</span><span><i class="legend-dot" style="background:#af52de"></i>Puteri</span></div>`;
 }
 function drawCharts(){
   if(activeTab!=="Dashboard") return;
