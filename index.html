@@ -1085,6 +1085,57 @@ body{
   .hero-preview{min-height:210px}
 }
 
+
+/* Friendly app utilities */
+.app-toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,18px);
+  z-index:20000;opacity:0;pointer-events:none;
+  padding:11px 15px;border-radius:999px;color:#fff;
+  background:#1d1d1f;box-shadow:0 12px 30px rgba(0,0,0,.18);
+  font-size:13px;font-weight:600;transition:.2s ease;
+}
+.app-toast.show{opacity:1;transform:translate(-50%,0)}
+.app-toast.error{background:#c5221f}
+.data-safety-card{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-top:14px;padding:14px 16px;border-radius:18px;
+  background:rgba(255,255,255,.76);border:1px solid rgba(0,0,0,.06);
+}
+.data-safety-card .copy{color:var(--secondary);font-size:12px}
+
+
+/* Compact top bar */
+.site-header{padding:0 18px 8px}
+.site-topbar{min-height:58px;gap:14px}
+.site-brand{min-width:190px}
+.site-logo{width:36px;height:36px;padding:3px}
+.site-brand-copy strong{font-size:15px}
+.site-brand-copy span{font-size:10px;margin-top:2px}
+.site-toplinks button{padding:7px 10px!important;font-size:12px!important}
+.site-header #authBar{padding:5px 7px;border-radius:11px}
+.site-header .auth-user{font-size:11px}
+.site-header .actions{margin-top:5px}
+.site-header .actions button{padding:7px 12px!important;font-size:12px!important}
+#nav{padding:0 18px 7px}
+#nav .nav-group-label{font-size:9px;padding:3px 6px 2px}
+#nav .nav-item{padding:6px 9px!important;font-size:11px!important}
+.creative-hero{min-height:300px;padding:44px 30px 38px}
+.hero-title{font-size:clamp(36px,4.2vw,56px)}
+.hero-copy{font-size:15px}
+@media(max-width:700px){
+  .site-header{padding:0 10px 7px}
+  .site-topbar{min-height:50px;gap:8px}
+  .site-brand{min-width:auto}
+  .site-logo{width:32px;height:32px}
+  .site-brand-copy strong{font-size:13px}
+  .site-brand-copy span{font-size:9px}
+  .site-toplinks button{padding:6px 8px!important;font-size:11px!important}
+  .site-header .actions button{padding:6px 10px!important}
+  #nav{padding:0 10px 6px}
+  .creative-hero{min-height:0;padding:30px 16px 28px;margin:0 -12px 16px}
+  .hero-title{font-size:36px}
+}
+
 </style>
 
 
@@ -1144,7 +1195,33 @@ body{
 <main id="app"></main>
 <script>
 const INITIAL = {"Instructions": {"headers": ["RELATIONSHIP COMPATIBILITY STUDY — MASTER DATA TEMPLATE", null, null, null, null, null], "rows": [["Purpose", null, null, null, null, null], ["Use this workbook to enter relationship-study data before the interactive HTML dashboard is generated.", null, null, null, null, null], ["Profiles", "Enter one person per row in the Profiles sheet. Add unlimited profiles later.", null, null, null, null], ["Categories", "Edit/add relationship dimensions and set importance from 1–10.", null, null, null, null], ["Scores", "Use 1–10. For stronger analysis, enter both self-perception and partner-perception.", null, null, null, null], ["Importance", "Rate how important each dimension is to the relationship from 1–10.", null, null, null, null], ["Gap", "The HTML will calculate the absolute difference between perceptions.", null, null, null, null], ["Scenarios", "Rate expected responses to realistic relationship situations.", null, null, null, null], ["Monthly Trend", "Enter repeated scores over time to study improvement or decline.", null, null, null, null], ["Notes", "Use notes for concrete examples/evidence behind a score.", null, null, null, null]]}, "Categories": {"headers": ["Category ID", "Category", "Importance (1-10)", "Description / What to assess"], "rows": [["C01", "Communication", 10, "Clarity, listening, openness, difficult conversations"], ["C02", "Trust & Security", 10, "Honesty, reliability, trust, emotional safety"], ["C03", "Understanding", 9, "Understanding personality, needs, boundaries and feelings"], ["C04", "Affection & Love Language", 8, "Attention, appreciation, affection and preferred love language"], ["C05", "Conflict Handling", 10, "Disagreements, repair, compromise and problem solving"], ["C06", "Fun & Lifestyle Compatibility", 7, "Hobbies, social style, routines and activities"], ["C07", "Mutual Support", 9, "Support during stress, study, work and personal challenges"], ["C08", "Future Alignment", 10, "Marriage, career, children, location and long-term goals"], ["C09", "Family Compatibility", 8, "Family expectations, boundaries and relationships"], ["C10", "Financial Compatibility", 9, "Saving, spending, debt and financial priorities"], ["C11", "Emotional Resilience", 8, "Stress response, emotional regulation and recovery"], ["C12", "Chemistry & Romance", 8, "Romantic connection, attraction and closeness"], ["C13", "Personal Growth", 7, "Whether both people encourage healthy growth"], ["C14", "Values & Principles", 10, "Core values, ethics, priorities and life principles"], ["C15", "Marriage / Daily Life", 10, "Household roles, responsibilities and lifestyle expectations"], ["C16", "Education & Learning Compatibility", 7, "Education background, learning interests, further-study goals and support for each other's development"]]}, "Profiles": {"headers": ["Profile ID", "Name", "Age", "Birthday", "Occupation / Study", "Education", "Personality", "Interests", "Strengths", "Things to Improve", "Relationship Notes"], "rows": [["P01", "Alya", 29, "1997-11-27", "freelancer", "Masters In Visual Comunication", "Caring/ Attachment Issue", "Art/ Cute things ?/ F1", "5 star Hospitality", "Parent issue ", "Good if her mom okay "], ["P02", "Puteri", 30, "1/27/96", "Procument", "Masters in Sustainable", "Avoident/ Indipendent", "Art/ Cute things ?/ Concert/ Outdoor Activity", "Sekufu Family / Inteligent/ ", "Lack of sense of humor/ too much independent", "SO/SO"]]}, "Score Matrix": {"headers": ["Category", "Importance", "Alya - Self Score", "Alya - Partner Score", "Puteri - Self Score", "Puteri - Partner Score", "Alya Gap", "Puteri Gap", "Alya Weighted", "Puteri Weighted", "Study Notes"], "rows": [["Communication", 10, null, null, null, null, null, null, null, null, null], ["Trust & Security", 10, null, null, null, null, null, null, null, null, null], ["Understanding", 9, null, null, null, null, null, null, null, null, null], ["Affection & Love Language", 8, null, null, null, null, null, null, null, null, null], ["Conflict Handling", 10, null, null, null, null, null, null, null, null, null], ["Fun & Lifestyle Compatibility", 7, null, null, null, null, null, null, null, null, null], ["Mutual Support", 9, null, null, null, null, null, null, null, null, null], ["Future Alignment", 10, null, null, null, null, null, null, null, null, null], ["Family Compatibility", 8, null, null, null, null, null, null, null, null, null], ["Financial Compatibility", 9, null, null, null, null, null, null, null, null, null], ["Emotional Resilience", 8, null, null, null, null, null, null, null, null, null], ["Chemistry & Romance", 8, null, null, null, null, null, null, null, null, null], ["Personal Growth", 7, null, null, null, null, null, null, null, null, null], ["Values & Principles", 10, null, null, null, null, null, null, null, null, null], ["Marriage / Daily Life", 10, null, null, null, null, null, null, null, null, null], ["Education & Learning Compatibility", 7, null, null, null, null, null, null, null, null, null]]}, "Scenario Study": {"headers": ["Scenario ID", "Scenario", "Dimension Tested", "Alya Response Score (1-10)", "Puteri Response Score (1-10)", "Importance", "Alya Notes", "Puteri Notes"], "rows": [["S01", "One person loses their job for 6 months", "Financial / Support", 10, 5, null, null, null], ["S02", "One person receives a job offer in another state", "Career / Compromise", 10, 10, null, null, null], ["S03", "Family members disagree with an important decision", "Family / Conflict", 2, 10, null, null, null], ["S04", "Unexpected RM10,000 emergency expense", "Finance / Problem Solving", 2, 2, null, null, null], ["S05", "One person needs significant emotional support", "Emotional / Support", 4, 4, null, null, null], ["S06", "Planning marriage within 1–2 years", "Future / Marriage", 3, 10, null, null, null], ["S07", "Different opinions about having children", "Values / Future", 5, 3, null, null, null], ["S08", "Different preferred living location", "Lifestyle / Future", 10, 5, null, null, null], ["S09", "One person wants to change career direction", "Career / Growth", 10, 3, null, null, null], ["S10", "Major disagreement about spending or saving", "Finance / Conflict", 2, 1, null, null, null]]}, "Monthly Trend": {"headers": ["Date", "Profile", "Communication", "Trust", "Affection", "Conflict Handling", "Future Alignment", "Family", "Education", "Finance", "Overall Notes"], "rows": []}, "Future & Finance": {"headers": ["Area", "Topic", "Alya Position / Target", "Puteri Position / Target", "Importance (1-10)", "Alignment Notes"], "rows": [["Marriage", "Target marriage timeframe", null, null, null, null], ["Marriage", "Preferred wedding budget", null, null, null, null], ["Children", "Want children?", null, null, null, null], ["Children", "Number of children", null, null, null, null], ["Location", "Preferred state/city", null, null, null, null], ["Career", "Career priority", null, null, null, null], ["Finance", "Saving philosophy", null, null, null, null], ["Finance", "Spending philosophy", null, null, null, null], ["Finance", "Debt tolerance", null, null, null, null], ["Finance", "Emergency fund target", null, null, null, null], ["Lifestyle", "Preferred daily routine", null, null, null, null], ["Family", "Family involvement / boundaries", null, null, null, null], ["Home", "Living arrangement", null, null, null, null], ["Values", "Core principles", null, null, null, null], ["Education", "Education / Learning goals", null, null, null, null]]}, "Dashboard Setup": {"headers": ["Module", "Planned Analysis", "Input Sheet", "Ready for HTML?"], "rows": [["Overview", "Overall score, weighted score, strengths, gaps, priority areas", "See relevant input sheet", "YES"], ["Compatibility", "Dual radar: self-perception vs partner-perception", "See relevant input sheet", "YES"], ["Gap Analysis", "Category-by-category disagreement and gap severity", "See relevant input sheet", "YES"], ["Priority Matrix", "Importance vs compatibility gap", "See relevant input sheet", "YES"], ["Personality", "Profile information, interests, values and lifestyle", "See relevant input sheet", "YES"], ["Future Planning", "Marriage, children, career, location and lifestyle alignment", "See relevant input sheet", "YES"], ["Financial", "Saving, spending and financial-goal compatibility", "See relevant input sheet", "YES"], ["Scenario Test", "Real-life hypothetical scenario analysis", "See relevant input sheet", "YES"], ["Relationship Trend", "Monthly score trends over time", "See relevant input sheet", "YES"], ["Profile Manager", "Add/delete/edit unlimited profiles and photos", "See relevant input sheet", "YES"], ["Education & Growth", "Education level, learning goals, career-development alignment", "Profiles + Future & Finance", "YES"]]}, "Spider Chart Data": {"headers": ["Category", "Alya", "Puteri", "Notes / Reason"], "rows": [["Communication", 9, 5, ""], ["Trust", 4, 3, ""], ["Affection", 6, 4, ""], ["Understanding", 8, 4, ""], ["Conflict Handling", 4, 1, ""], ["Fun & Compatibility", 10, 10, ""], ["Support", 10, 10, ""], ["Future Alignment", 8, 10, ""], ["Family Compatibility", 3, 5, ""], ["Financial Compatibility", 3, 7, ""]]}};
-let db = JSON.parse(localStorage.getItem("relationshipDashboardData") || "null") || INITIAL;
+function hasUsableDashboardData(candidate){
+  if(!candidate || typeof candidate!=="object") return false;
+  const required=["Instructions","Categories","Profiles","Score Matrix","Scenario Study","Monthly Trend","Future & Finance","Dashboard Setup","Spider Chart Data"];
+  if(!required.every(k=>candidate[k] && Array.isArray(candidate[k].rows) && Array.isArray(candidate[k].headers))) return false;
+  if(!candidate.Profiles.rows.some(r=>String(r?.[1]??"").trim())) return false;
+  if(!candidate.Categories.rows.length) return false;
+  if(!candidate["Spider Chart Data"].rows.length) return false;
+  if(!candidate["Scenario Study"].rows.length) return false;
+  if(!candidate["Future & Finance"].rows.length) return false;
+  return true;
+}
+function cloneInitialData(){
+  return JSON.parse(JSON.stringify(INITIAL));
+}
+function loadInitialOrSavedData(){
+  try{
+    const raw=localStorage.getItem("relationshipDashboardData");
+    const saved=raw?JSON.parse(raw):null;
+    if(hasUsableDashboardData(saved)) return saved;
+  }catch(err){
+    console.warn("Saved dashboard data could not be read. Restoring original data.",err);
+  }
+  const fresh=cloneInitialData();
+  localStorage.setItem("relationshipDashboardData",JSON.stringify(fresh));
+  return fresh;
+}
+let db = loadInitialOrSavedData();
 let activeTab = "Dashboard";
 let compareA = null;
 let compareB = null;
@@ -1164,9 +1241,42 @@ const calcCols = {"Score Matrix":[6,7,8,9]};
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 function isBlank(v){return v===null||v===undefined||v==="";}
 function valNum(v){let n=parseFloat(v);return Number.isFinite(n)?n:null;}
-function saveData(silent=false){
+function showToast(message,type="ok"){
+  let el=document.getElementById("appToast");
+  if(!el){
+    el=document.createElement("div");
+    el.id="appToast";
+    el.className="app-toast";
+    document.body.appendChild(el);
+  }
+  el.textContent=message;
+  el.className="app-toast "+type+" show";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(()=>el.classList.remove("show"),2600);
+}
+async function saveData(silent=false){
+  try{
+    localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
+    let online=false;
+    if(typeof window.firebaseCloudSave==="function" && window.firebaseConfigured && window.firebaseReady){
+      online=await window.firebaseCloudSave(true);
+    }
+    if(!silent) showToast(online?"Saved to this browser and Firebase.":"Saved to this browser.","ok");
+  }catch(err){
+    console.error("Save failed",err);
+    if(!silent) showToast("Save failed. Your current screen was not changed.","error");
+  }
+}
+function resetToOriginalData(){
+  const ok=confirm("Restore the original master data from your uploaded HTML?\n\nThis replaces the current local browser data.");
+  if(!ok)return;
+  db=cloneInitialData();
   localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
-  if(!silent) alert("Saved. Your latest dashboard data is stored in this browser.");
+  ensureProfileColumnsForAll();
+  dashboardProfileName=profileNamesEnhanced()[0]||"";
+  selectedProfileName=dashboardProfileName||null;
+  render();
+  showToast("Original master data restored.","ok");
 }
 function exportJSON(){
   const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
@@ -1658,7 +1768,10 @@ function dashboard(){
   </div>
   <div class="card" style="margin-top:14px"><h2>Automatic Analytics</h2><div id="analyticsText" class="empty">Calculating analysis…</div></div>
   <div class="card" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h2 style="margin-bottom:3px">Compare Profiles</h2><p style="font-size:13px;color:#6e6e73;margin:0">Compare 2 or 3 people with their own chart lines and legend.</p></div><button class="primary" onclick="activeTab='Comparison';render()">Open Comparison</button></div></div>
-  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. Edit data from the relevant tab.</p></div>`;
+  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. Edit data from the relevant tab.</p></div><div class="data-safety-card">
+  <div class="copy"><strong>Data backup</strong><br>Your original master data is embedded in this website. Use Reset only when you need to restore the original uploaded dataset.</div>
+  <button class="small" onclick="resetToOriginalData()">Reset to Original Data</button>
+</div>`;
 }
 
 function render(){
@@ -2196,7 +2309,7 @@ async function loadCloud(user){
       return;
     }
     const remote=snap.data()?.dashboard;
-    const looksValid=remote && remote.Instructions && remote.Categories && remote.Profiles && remote["Score Matrix"] && remote["Scenario Study"] && remote["Future & Finance"] && remote["Dashboard Setup"] && remote["Spider Chart Data"];
+    const looksValid=typeof hasUsableDashboardData==="function" && hasUsableDashboardData(remote);
     if(looksValid){
       db=remote;
       db.__profilePhotos=db.__profilePhotos||{};
