@@ -1304,6 +1304,8 @@ body{
   .subnav-links{flex:0 0 auto}
 }
 
+
+.analytics-grid{align-items:stretch}.analytics-panel{overflow:hidden}.chart-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.chart-title-row h2{margin-bottom:4px}.compact-select{min-width:170px;padding:8px 10px;border:1px solid rgba(0,0,0,.08);border-radius:10px;background:#fff;font:600 12px inherit;color:var(--text)}.analytics-chart{min-height:320px;margin-top:10px;display:flex;flex-direction:column;justify-content:center;overflow:auto;border:1px solid rgba(0,0,0,.04);border-radius:18px;background:rgba(248,249,251,.72);padding:10px}.analytics-chart svg{width:100%;height:auto;min-width:620px;display:block}.analytics-chart.spider-stage svg{min-width:520px}.chart-legend{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 4px 2px;color:#667085;font-size:11px}.chart-legend span{display:inline-flex;align-items:center;gap:6px}.chart-legend em{font-size:10px;color:#98a2b3;font-style:normal}.analytics-empty{padding:52px 20px;text-align:center;line-height:1.55}@media(max-width:900px){.analytics-grid{grid-template-columns:1fr!important}.analytics-chart{min-height:280px}}@media(max-width:700px){.analytics-chart svg{min-width:560px}.analytics-chart.spider-stage svg{min-width:500px}}
 </style>
 
 
@@ -1720,25 +1722,25 @@ function trendRows(){
   return t.filter(r=>Array.isArray(r) && String(r[0]??"").trim());
 }
 function trendFor(name){
-  const rows=trendRows();
+  const rows=trendRows().filter(r=>String(r?.[1]??"").trim().toLowerCase()===String(name??"").trim().toLowerCase());
   if(!rows.length)return [];
   const headers=db["Monthly Trend"]?.headers||[];
-  const nameCol=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(name??"").trim().toLowerCase());
-  if(nameCol<0)return [];
-  return rows.map(r=>({period:String(r[0]??"").trim(), value:valNum(r[nameCol])})).filter(x=>x.value!==null);
+  const scoreIndexes=headers.map((h,i)=>({h:String(h||""),i})).filter(x=>x.i>=2 && !/overall notes/i.test(x.h));
+  return rows.map(r=>{const vals=scoreIndexes.map(x=>valNum(r?.[x.i])).filter(v=>v!==null);return {period:String(r[0]??"").trim(),value:vals.length?avg(vals):null};}).filter(x=>x.value!==null);
 }
+
 function scenarioRowsForCompare(){
-  const rows=db["Scenario Study"]?.rows||[];
-  const headers=db["Scenario Study"]?.headers||[];
-  const ai=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(compareA??"").trim().toLowerCase());
-  const bi=headers.findIndex(h=>String(h??"").trim().toLowerCase()===String(compareB??"").trim().toLowerCase());
-  if(ai<0 && bi<0)return [];
-  return rows.map(r=>({
-    scenario:String(r[1]??r[0]??"").trim(),
-    a:ai>=0?valNum(r[ai]):null,
-    b:bi>=0?valNum(r[bi]):null
-  })).filter(x=>x.scenario && (x.a!==null || x.b!==null));
+  const rows=db["Scenario Study"]?.rows||[],headers=db["Scenario Study"]?.headers||[];
+  function colFor(name){
+    const target=String(name??"").trim().toLowerCase();
+    let i=headers.findIndex(h=>String(h??"").trim().toLowerCase()===target+" response score (1-10)");
+    if(i>=0)return i;
+    return headers.findIndex(h=>String(h??"").toLowerCase().includes(target) && /response score/i.test(String(h??"")));
+  }
+  const ai=colFor(compareA),bi=colFor(compareB);
+  return rows.map(r=>({scenario:String(r?.[1]??r?.[0]??"").trim(),a:ai>=0?valNum(r?.[ai]):null,b:bi>=0?valNum(r?.[bi]):null})).filter(x=>x.scenario&&(x.a!==null||x.b!==null));
 }
+
 function buildForecast(values){
   const complete=values.filter(x=>x.a!==null&&x.b!==null);
   const currentA=complete.length?avg(complete.map(x=>x.a)):null;
@@ -1893,6 +1895,77 @@ function comparisonPage(){
   </div>`;
 }
 
+
+function normalizeLabel(v){return String(v??"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").trim();}
+function profileScoreForCategory(profile,category){
+  const target=normalizeLabel(category),options=profileSpiderData(profile).filter(x=>x.value!==null);
+  const aliases={"trust security":["trust"],"affection love language":["affection"],"fun lifestyle compatibility":["fun"],"mutual support":["support"],"family compatibility":["family"],"financial compatibility":["financial","finance"],"education learning compatibility":["education","learning"]};
+  for(const x of options){const n=normalizeLabel(x.name);if(n===target||n.includes(target)||target.includes(n))return x.value;}
+  for(const key of Object.keys(aliases)){if(target.includes(key)||key.includes(target)){for(const a of aliases[key]){const hit=options.find(x=>normalizeLabel(x.name).includes(a));if(hit)return hit.value;}}}
+  return null;
+}
+function svgCategoryScoreBars(name){
+  const data=profileSpiderData(name).filter(x=>x.value!==null).sort((a,b)=>b.value-a.value);
+  if(!data.length)return '<div class="empty analytics-empty">No category scores are available for '+esc(name)+' yet.</div>';
+  const w=820,rowH=34,left=245,right=60,top=22,bottom=18,h=top+rowH*data.length+bottom,barW=w-left-right;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  [0,2,4,6,8,10].forEach(v=>{const x=left+v/10*barW;s+='<line x1="'+x+'" y1="'+(top-4)+'" x2="'+x+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.06)"/><text x="'+x+'" y="14" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
+  data.forEach((d,i)=>{const y=top+i*rowH,width=Math.max(4,d.value/10*barW);s+='<text x="8" y="'+(y+16)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.name,29))+'</text><rect x="'+left+'" y="'+(y+5)+'" width="'+barW+'" height="16" rx="8" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+5)+'" width="'+width+'" height="16" rx="8" fill="#0071e3"/><text x="'+Math.min(w-6,left+width+8)+'" y="'+(y+17)+'" font-size="11" font-weight="700" fill="#1d1d1f">'+d.value+'/10</text>';});
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+'</span></div>';
+}
+function svgImportanceScoreScatter(name){
+  const cats=(db.Categories?.rows||[]).map(r=>({name:String(r?.[1]||""),importance:valNum(r?.[2])})).filter(x=>x.name&&x.importance!==null);
+  const data=cats.map(x=>({...x,score:profileScoreForCategory(name,x.name)})).filter(x=>x.score!==null);
+  if(!data.length)return '<div class="empty analytics-empty">Add category scores to unlock Importance vs Score analysis.</div>';
+  const w=820,h=420,left=58,right=28,top=32,bottom=52,pw=w-left-right,ph=h-top-bottom,px=v=>left+v/10*pw,py=v=>top+ph-v/10*ph;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  [0,2,4,6,8,10].forEach(v=>{s+='<line x1="'+left+'" y1="'+py(v)+'" x2="'+(w-right)+'" y2="'+py(v)+'" stroke="rgba(0,0,0,.05)"/><text x="'+(left-10)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="10" fill="#98a2b3">'+v+'</text><text x="'+px(v)+'" y="'+(h-18)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
+  s+='<line x1="'+px(5)+'" y1="'+top+'" x2="'+px(5)+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.07)" stroke-dasharray="4 4"/><line x1="'+left+'" y1="'+py(5)+'" x2="'+(w-right)+'" y2="'+py(5)+'" stroke="rgba(0,0,0,.07)" stroke-dasharray="4 4"/>';
+  data.forEach(d=>{const cx=px(d.importance),cy=py(d.score);s+='<circle cx="'+cx+'" cy="'+cy+'" r="6" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(d.name)+' • Importance '+d.importance+' • Score '+d.score+'</title></circle><text x="'+(cx+9)+'" y="'+(cy-8)+'" font-size="10" fill="#475467">'+esc(shortLabel(d.name,18))+'</text>';});
+  s+='<text x="'+w/2+'" y="'+(h-2)+'" text-anchor="middle" font-size="11" fill="#667085">Importance (1–10)</text><text x="14" y="'+h/2+'" transform="rotate(-90 14 '+h/2+')" text-anchor="middle" font-size="11" fill="#667085">Score (1–10)</text></svg>';
+  return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+'</span></div>';
+}
+function svgTrendLine(name){
+  const data=trendFor(name);
+  if(!data.length)return '<div class="empty analytics-empty">No Monthly Trend rows have been entered for '+esc(name)+' yet. Add dates and category scores in Monthly Trend to unlock this chart.</div>';
+  const w=820,h=360,left=55,right=25,top=28,bottom=48,pw=w-left-right,ph=h-top-bottom,maxX=Math.max(1,data.length-1),px=i=>left+i/maxX*pw,py=v=>top+ph-v/10*ph;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  [0,2,4,6,8,10].forEach(v=>{s+='<line x1="'+left+'" y1="'+py(v)+'" x2="'+(w-right)+'" y2="'+py(v)+'" stroke="rgba(0,0,0,.06)"/><text x="'+(left-9)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="10" fill="#98a2b3">'+v+'</text>';});
+  const pts=data.map((d,i)=>px(i)+","+py(d.value)).join(" ");s+='<polyline points="'+pts+'" fill="none" stroke="#0071e3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+  data.forEach((d,i)=>{s+='<circle cx="'+px(i)+'" cy="'+py(d.value)+'" r="4.5" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(d.period)+': '+d.value.toFixed(1)+'/10</title></circle><text x="'+px(i)+'" y="'+(h-22)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+esc(shortLabel(d.period,11))+'</text>';});
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+' trend</span></div>';
+}
+function compareValuesFor(nameA,nameB){
+  const headers=db["Spider Chart Data"]?.headers||[],rows=db["Spider Chart Data"]?.rows||[],ai=findHeaderIndex(headers,nameA),bi=findHeaderIndex(headers,nameB);
+  return rows.map(r=>({name:String(r?.[0]||""),a:ai>=0?valNum(r?.[ai]):null,b:bi>=0?valNum(r?.[bi]):null})).filter(x=>x.name);
+}
+function svgGapHeatmap(nameA,nameB){
+  const data=compareValuesFor(nameA,nameB).filter(x=>x.a!==null&&x.b!==null).map(x=>({...x,gap:Math.abs(x.a-x.b)}));
+  if(!data.length)return '<div class="empty analytics-empty">No shared scores are available for a gap heatmap.</div>';
+  const cols=Math.min(5,Math.max(1,data.length)),cellW=155,cellH=74,w=cols*cellW+30,rows=Math.ceil(data.length/cols),h=rows*cellH+42;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  data.forEach((d,i)=>{const col=i%cols,row=Math.floor(i/cols),x=15+col*cellW,y=30+row*cellH,alpha=.08+d.gap/10*.45;s+='<rect x="'+x+'" y="'+y+'" width="'+(cellW-8)+'" height="'+(cellH-8)+'" rx="12" fill="rgba(175,82,222,'+alpha.toFixed(2)+')" stroke="rgba(0,0,0,.05)"/><text x="'+(x+10)+'" y="'+(y+20)+'" font-size="10" font-weight="600" fill="#475467">'+esc(shortLabel(d.name,21))+'</text><text x="'+(x+10)+'" y="'+(y+46)+'" font-size="20" font-weight="800" fill="#1d1d1f">'+d.gap.toFixed(1)+'</text><text x="'+(x+52)+'" y="'+(y+44)+'" font-size="10" fill="#667085">gap</text>';});
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-puterI"></i>Higher opacity = larger score gap</span></div>';
+}
+function svgDumbbell(nameA,nameB){
+  const data=compareValuesFor(nameA,nameB).filter(x=>x.a!==null&&x.b!==null).sort((a,b)=>Math.max(b.a,b.b)-Math.max(a.a,a.b));
+  if(!data.length)return '<div class="empty analytics-empty">No shared scores are available for a dumbbell comparison.</div>';
+  const w=820,rowH=34,left=245,right=42,top=24,bottom=16,h=top+data.length*rowH+bottom,barW=w-left-right,px=v=>left+v/10*barW;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  [0,2,4,6,8,10].forEach(v=>{const x=px(v);s+='<line x1="'+x+'" y1="'+(top-5)+'" x2="'+x+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.05)"/><text x="'+x+'" y="14" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
+  data.forEach((d,i)=>{const y=top+i*rowH+9,xa=px(d.a),xb=px(d.b);s+='<text x="8" y="'+(y+4)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.name,29))+'</text><line x1="'+Math.min(xa,xb)+'" y1="'+y+'" x2="'+Math.max(xa,xb)+'" y2="'+y+'" stroke="#c7c9cf" stroke-width="5" stroke-linecap="round"/><circle cx="'+xa+'" cy="'+y+'" r="6" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(nameA)+': '+d.a+'/10</title></circle><circle cx="'+xb+'" cy="'+y+'" r="6" fill="#af52de" stroke="#fff" stroke-width="2"><title>'+esc(nameB)+': '+d.b+'/10</title></circle>';});
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(nameA)+'</span><span><i class="legend-dot legend-puterI"></i>'+esc(nameB)+'</span></div>';
+}
+function svgFutureFinanceReadiness(){
+  const rows=db["Future & Finance"]?.rows||[];
+  if(!rows.length)return '<div class="empty analytics-empty">Add Future & Finance rows to unlock planning analysis.</div>';
+  const areas=[...new Set(rows.map(r=>String(r?.[0]||"").trim()).filter(Boolean))];
+  const data=areas.map(area=>{const group=rows.filter(r=>String(r?.[0]||"").trim()===area),total=group.length||1,a=group.filter(r=>String(r?.[2]??"").trim()!=="").length/total*100,p=group.filter(r=>String(r?.[3]??"").trim()!=="").length/total*100;return {area,a,p};});
+  const w=820,rowH=46,left=150,right=20,top=28,bottom=18,h=top+data.length*rowH+bottom,barW=w-left-right;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  data.forEach((d,i)=>{const y=top+i*rowH;s+='<text x="8" y="'+(y+18)+'" font-size="11" fill="#475467">'+esc(shortLabel(d.area,20))+'</text><rect x="'+left+'" y="'+(y+6)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+6)+'" width="'+(barW*d.a/100)+'" height="8" rx="4" fill="#0071e3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+barW+'" height="8" rx="4" fill="#eef0f3"/><rect x="'+left+'" y="'+(y+22)+'" width="'+(barW*d.p/100)+'" height="8" rx="4" fill="#af52de"/><text x="'+(w-2)+'" y="'+(y+13)+'" text-anchor="end" font-size="10" fill="#667085">Alya '+d.a.toFixed(0)+'%</text><text x="'+(w-2)+'" y="'+(y+29)+'" text-anchor="end" font-size="10" fill="#667085">Puteri '+d.p.toFixed(0)+'%</text>';});
+  s+='</svg>';return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>Alya</span><span><i class="legend-dot legend-puterI"></i>Puteri</span><em>Shows data completion, not outcome alignment.</em></div>';
+}
 function dashboard(){
   const rows=scores();
   const gaps=rows.map(r=>({name:r[0],gap:valNum(r[6]),importance:valNum(r[1])})).filter(x=>x.gap!==null);
