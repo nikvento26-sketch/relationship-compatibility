@@ -1579,6 +1579,46 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
 .compare-analysis-grid{gap:10px;margin-top:10px}.compare-header{gap:10px;margin-bottom:10px}.compare-person{padding:12px;border-radius:15px}.compare-profile-row{gap:10px}.forecast-grid{gap:7px;margin-top:10px}.forecast-metric{padding:10px;border-radius:11px}.forecast-metric .value{font-size:17px}
 @media(max-width:900px){.container{padding:18px 14px 36px}.grid.kpis{grid-template-columns:repeat(2,1fr)}.chart-stage,.chart-box{height:280px}.compare-chart{height:300px}}
 @media(max-width:600px){.container{padding:12px 10px 28px}header{padding:7px 0 10px}header h1{font-size:25px}.subtitle{font-size:12px}.actions button{padding:8px 12px;font-size:12px}.tabs{margin:5px 0 10px;overflow-x:auto}.tab{padding:6px 9px;font-size:11px}.card{padding:13px;border-radius:15px}.grid.kpis{gap:7px}.kpi{min-height:82px;padding:11px;border-radius:12px}.kpi .value{font-size:20px}.chart-grid,.grid2,.compare-analysis-grid,.analytics{grid-template-columns:1fr}.chart-stage,.chart-box{height:260px}.compare-chart{height:270px}.profile-grid{grid-template-columns:1fr}.profile-card{border-radius:16px}.profile-cover{height:72px}.profile-avatar{width:70px;height:70px}.profile-avatar-wrap{margin-top:-35px}.table-wrap{overflow-x:auto}th,td{font-size:10px;padding:7px}.forecast-grid{grid-template-columns:1fr 1fr}}
+
+/* Mobile header usability fix */
+.site-header{position:relative;z-index:1000}
+.site-topbar{position:relative;z-index:1001}
+.site-toplinks{position:relative;z-index:1003;pointer-events:auto}
+.site-toplinks button{pointer-events:auto;touch-action:manipulation}
+.site-header #authBar{position:relative;z-index:1004}
+@media(max-width:800px){
+  .site-header{padding:5px 8px 7px;overflow:visible}
+  .site-topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand auth" "links links";align-items:center;gap:5px 8px;min-height:0;padding:3px 0}
+  .site-brand{grid-area:brand;min-width:0;gap:6px;overflow:hidden}
+  .site-logo{width:30px;height:30px;padding:3px;border-radius:5px;flex:0 0 auto}
+  .site-logo span{font-size:7px}
+  .site-brand-copy{min-width:0}
+  .site-brand-copy strong{font-size:12px;line-height:1}
+  .site-brand-copy span{font-size:8px;margin-top:2px;white-space:nowrap}
+  .site-toplinks{grid-area:links;display:flex;min-width:0;width:100%;gap:2px;overflow-x:auto;overflow-y:hidden;padding:2px 1px 1px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .site-toplinks::-webkit-scrollbar{display:none}
+  .site-toplinks button,.site-toplinks .toplink{flex:0 0 auto!important;padding:6px 9px!important;font-size:10px!important;line-height:1.2;border-radius:7px!important;min-height:30px}
+  .site-header #authBar{grid-area:auth;margin:0!important;padding:3px 4px!important;border-radius:9px!important;display:flex;align-items:center;gap:4px;max-width:145px;min-width:0;background:rgba(255,255,255,.13);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .site-header .auth-user{min-width:0;font-size:8px!important;gap:3px}
+  .site-header .auth-status{padding:3px 5px!important;gap:3px;white-space:nowrap}
+  .site-header #authState{max-width:44px;overflow:hidden;text-overflow:ellipsis}
+  .site-header #authEmail{display:none}
+  .site-header .auth-actions{gap:2px;flex:0 0 auto}
+  .site-header .auth-actions button{padding:5px 7px!important;font-size:9px!important;min-height:26px}
+  .site-actions{display:none!important}
+  #nav{position:relative;z-index:999;padding:0 7px 5px;overflow:hidden}
+  #nav .nav-group-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+  #nav .nav-item{font-size:10px!important;padding:6px 8px!important}
+  .subnav-inner{position:relative;z-index:1000;min-height:31px;overflow-x:auto;touch-action:pan-x}
+}
+@media(max-width:420px){
+  .site-brand-copy strong{font-size:11px}
+  .site-brand-copy span{font-size:7px}
+  .site-header #authBar{max-width:130px}
+  .site-header #authState{display:none}
+  .site-header .auth-status{padding:3px 4px!important}
+  .site-toplinks button,.site-toplinks .toplink{padding:6px 8px!important;font-size:9px!important}
+}
 </style>
 
 
