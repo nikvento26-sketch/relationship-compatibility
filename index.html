@@ -2994,19 +2994,20 @@ setTimeout(drawDashboardAnalytics,80);
 // Replace these placeholder values with the Web App config from your Firebase console.
 // The web config is meant to be used by client-side Firebase apps; data protection comes from Auth + Firestore Security Rules.
 window.FIREBASE_CONFIG = {
-  apiKey: "REPLACE_WITH_FIREBASE_API_KEY",
-  authDomain: "REPLACE_WITH_FIREBASE_AUTH_DOMAIN",
-  projectId: "REPLACE_WITH_FIREBASE_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_WITH_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "REPLACE_WITH_FIREBASE_APP_ID"
+  apiKey: "AIzaSyAaCczUOJ50vC1M3siuqBAI2sO_1S3mUDs",
+  authDomain: "testnikr-c7de6.firebaseapp.com",
+  projectId: "testnikr-c7de6",
+  storageBucket: "testnikr-c7de6.firebasestorage.app",
+  messagingSenderId: "814874110223",
+  appId: "1:814874110223:web:0f0f3202a13c5aa56c767a",
+  measurementId: "G-D6717MK9TP"
 };
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, signOut
+  createUserWithEmailAndPassword, sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, serverTimestamp
@@ -3039,8 +3040,8 @@ function updateAuthUI(user){
   if(dot)dot.classList.toggle("online",!!user);
   if(state)state.textContent=user?"Firebase online":(isConfigured?"Signed out":"Local mode");
   if(email)email.textContent=user?(user.email||""):"";
-  if(login)login.style.display="none";
-  if(logout)logout.style.display="inline-flex";
+  if(login)login.style.display=user?"none":"inline-flex";
+  if(logout)logout.style.display=user?"inline-flex":"none";
   if(gate)gate.classList.toggle("open",!user);\n  if(!user && !isConfigured) msg("Firebase is not connected yet. Add your Firebase Web App config to enable login.","error");
 }
 
