@@ -1308,6 +1308,25 @@ body{
 .analytics-grid{align-items:stretch}.analytics-panel{overflow:hidden}.chart-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.chart-title-row h2{margin-bottom:4px}.compact-select{min-width:170px;padding:8px 10px;border:1px solid rgba(0,0,0,.08);border-radius:10px;background:#fff;font:600 12px inherit;color:var(--text)}.analytics-chart{min-height:320px;margin-top:10px;display:flex;flex-direction:column;justify-content:center;overflow:auto;border:1px solid rgba(0,0,0,.04);border-radius:18px;background:rgba(248,249,251,.72);padding:10px}.analytics-chart svg{width:100%;height:auto;min-width:620px;display:block}.analytics-chart.spider-stage svg{min-width:520px}.chart-legend{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 4px 2px;color:#667085;font-size:11px}.chart-legend span{display:inline-flex;align-items:center;gap:6px}.chart-legend em{font-size:10px;color:#98a2b3;font-style:normal}.analytics-empty{padding:52px 20px;text-align:center;line-height:1.55}@media(max-width:900px){.analytics-grid{grid-template-columns:1fr!important}.analytics-chart{min-height:280px}}@media(max-width:700px){.analytics-chart svg{min-width:560px}.analytics-chart.spider-stage svg{min-width:500px}}
 
 .analytics-stack{max-width:100%;}.analytics-stack .analytics-panel{background:#fff}.analytics-stack .analytics-chart{min-height:320px}.analytics-stack .chart-title-row{padding-bottom:4px}@media(max-width:700px){.analytics-stack .analytics-chart{min-height:260px}}
+
+/* Responsive analytics detail table */
+.analytics-detail-table-wrap{margin-top:14px;border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden;background:#fff}
+.analytics-detail-table{width:100%;border-collapse:collapse;font-size:12px}
+.analytics-detail-table th{padding:10px 12px;text-align:left;background:#f7f8fa;color:#667085;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.analytics-detail-table td{padding:10px 12px;border-top:1px solid rgba(0,0,0,.05);color:#344054}
+.analytics-detail-table tbody tr:hover{background:#fafcff}
+.priority-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.priority-pill.high{background:#fff0ef;color:#c5221f}.priority-pill.medium{background:#fff6e6;color:#9a5b00}.priority-pill.low{background:#eef7ff;color:#075ea8}
+.importance-legend{margin-top:8px}
+.legend-high{background:#ff3b30!important}.legend-medium{background:#ff9500!important}.legend-low{background:#0071e3!important}
+@media(max-width:700px){
+  .analytics-detail-table-wrap{border:0;background:transparent;overflow:visible}
+  .analytics-detail-table,.analytics-detail-table thead,.analytics-detail-table tbody,.analytics-detail-table tr,.analytics-detail-table td{display:block;width:100%}
+  .analytics-detail-table thead{display:none}
+  .analytics-detail-table tr{margin-bottom:9px;border:1px solid rgba(0,0,0,.06);border-radius:14px;background:#fff;padding:5px 0;box-shadow:0 4px 14px rgba(0,0,0,.035)}
+  .analytics-detail-table td{position:relative;padding:8px 12px 8px 44%;border:0;min-height:32px;box-sizing:border-box}
+  .analytics-detail-table td::before{content:attr(data-label);position:absolute;left:12px;top:8px;width:35%;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#98a2b3}
+}
 </style>
 
 
@@ -1919,13 +1938,55 @@ function svgImportanceScoreScatter(name){
   const cats=(db.Categories?.rows||[]).map(r=>({name:String(r?.[1]||""),importance:valNum(r?.[2])})).filter(x=>x.name&&x.importance!==null);
   const data=cats.map(x=>({...x,score:profileScoreForCategory(name,x.name)})).filter(x=>x.score!==null);
   if(!data.length)return '<div class="empty analytics-empty">Add category scores to unlock Importance vs Score analysis.</div>';
-  const w=820,h=420,left=58,right=28,top=32,bottom=52,pw=w-left-right,ph=h-top-bottom,px=v=>left+v/10*pw,py=v=>top+ph-v/10*ph;
-  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
-  [0,2,4,6,8,10].forEach(v=>{s+='<line x1="'+left+'" y1="'+py(v)+'" x2="'+(w-right)+'" y2="'+py(v)+'" stroke="rgba(0,0,0,.05)"/><text x="'+(left-10)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="10" fill="#98a2b3">'+v+'</text><text x="'+px(v)+'" y="'+(h-18)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';});
-  s+='<line x1="'+px(5)+'" y1="'+top+'" x2="'+px(5)+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.07)" stroke-dasharray="4 4"/><line x1="'+left+'" y1="'+py(5)+'" x2="'+(w-right)+'" y2="'+py(5)+'" stroke="rgba(0,0,0,.07)" stroke-dasharray="4 4"/>';
-  data.forEach(d=>{const cx=px(d.importance),cy=py(d.score);s+='<circle cx="'+cx+'" cy="'+cy+'" r="6" fill="#0071e3" stroke="#fff" stroke-width="2"><title>'+esc(d.name)+' • Importance '+d.importance+' • Score '+d.score+'</title></circle><text x="'+(cx+9)+'" y="'+(cy-8)+'" font-size="10" fill="#475467">'+esc(shortLabel(d.name,18))+'</text>';});
-  s+='<text x="'+w/2+'" y="'+(h-2)+'" text-anchor="middle" font-size="11" fill="#667085">Importance (1–10)</text><text x="14" y="'+h/2+'" transform="rotate(-90 14 '+h/2+')" text-anchor="middle" font-size="11" fill="#667085">Score (1–10)</text></svg>';
-  return s+'<div class="chart-legend"><span><i class="legend-dot legend-alya"></i>'+esc(name)+'</span></div>';
+
+  const ranked=[...data].map(d=>{
+    const priority=(d.importance/10)*(10-d.score);
+    let level="Low";
+    if(priority>=5.5)level="High";
+    else if(priority>=2.5)level="Medium";
+    return {...d,priority,level};
+  }).sort((a,b)=>b.priority-a.priority);
+
+  const w=860,h=430,left=62,right=28,top=30,bottom=54,pw=w-left-right,ph=h-top-bottom;
+  const px=v=>left+(v/10)*pw,py=v=>top+ph-(v/10)*ph;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Importance versus score for '+esc(name)+'">';
+
+  // quadrant background
+  s+='<rect x="'+left+'" y="'+py(10)+'" width="'+pw/2+'" height="'+ph/2+'" fill="rgba(52,199,89,.045)"/>';
+  s+='<rect x="'+px(5)+'" y="'+py(5)+'" width="'+pw/2+'" height="'+ph/2+'" fill="rgba(255,149,0,.045)"/>';
+  s+='<line x1="'+px(5)+'" y1="'+top+'" x2="'+px(5)+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.08)" stroke-dasharray="5 5"/>';
+  s+='<line x1="'+left+'" y1="'+py(5)+'" x2="'+(w-right)+'" y2="'+py(5)+'" stroke="rgba(0,0,0,.08)" stroke-dasharray="5 5"/>';
+
+  [0,2,4,6,8,10].forEach(v=>{
+    s+='<line x1="'+left+'" y1="'+py(v)+'" x2="'+(w-right)+'" y2="'+py(v)+'" stroke="rgba(0,0,0,.05)"/>';
+    s+='<line x1="'+px(v)+'" y1="'+top+'" x2="'+px(v)+'" y2="'+(h-bottom)+'" stroke="rgba(0,0,0,.04)"/>';
+    s+='<text x="'+(left-10)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="10" fill="#98a2b3">'+v+'</text>';
+    s+='<text x="'+px(v)+'" y="'+(h-18)+'" text-anchor="middle" font-size="10" fill="#98a2b3">'+v+'</text>';
+  });
+
+  s+='<text x="'+(left+10)+'" y="'+(top+15)+'" font-size="10" font-weight="700" fill="#34a853">Strong + lower importance</text>';
+  s+='<text x="'+(left+pw/2+10)+'" y="'+(top+15)+'" font-size="10" font-weight="700" fill="#b26a00">High priority zone</text>';
+  s+='<text x="'+(left+10)+'" y="'+(h-bottom-8)+'" font-size="10" fill="#98a2b3">Lower score</text>';
+  s+='<text x="'+(w-right-84)+'" y="'+(h-bottom-8)+'" font-size="10" fill="#98a2b3">Higher score</text>';
+
+  data.forEach(d=>{
+    const cx=px(d.importance),cy=py(d.score);
+    const r=d.level==="High"?8:d.level==="Medium"?7:6;
+    const fill=d.level==="High"?"#ff3b30":d.level==="Medium"?"#ff9500":"#0071e3";
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'" stroke="#fff" stroke-width="2"><title>'+esc(d.name)+' • Importance '+d.importance+' • Score '+d.score+' • '+d.level+' priority</title></circle>';
+  });
+
+  s+='<text x="'+w/2+'" y="'+(h-2)+'" text-anchor="middle" font-size="11" fill="#667085">Importance (1–10)</text>';
+  s+='<text x="14" y="'+(h/2)+'" transform="rotate(-90 14 '+(h/2)+')" text-anchor="middle" font-size="11" fill="#667085">Score (1–10)</text>';
+  s+='</svg>';
+
+  const table='<div class="analytics-detail-table-wrap"><table class="analytics-detail-table"><thead><tr><th>Category</th><th>Importance</th><th>Score</th><th>Priority</th></tr></thead><tbody>'+
+    ranked.map(d=>'<tr><td data-label="Category">'+esc(d.name)+'</td><td data-label="Importance">'+d.importance+'</td><td data-label="Score">'+d.score+'/10</td><td data-label="Priority"><span class="priority-pill '+d.level.toLowerCase()+'">'+d.level+'</span></td></tr>').join('')+
+    '</tbody></table></div>';
+
+  return s+
+    '<div class="chart-legend importance-legend"><span><i class="legend-dot legend-high"></i>High priority</span><span><i class="legend-dot legend-medium"></i>Medium</span><span><i class="legend-dot legend-low"></i>Lower priority</span><em>Hover a point to see the full category name and score.</em></div>'+
+    table;
 }
 function svgTrendLine(name){
   const data=trendFor(name);
