@@ -2455,8 +2455,10 @@ function drawDashboardAnalytics(){
 function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
   const names=profileNamesEnhanced();
   const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
-  const profiles=selected.map(name=>profileByName(name)).filter(Boolean);
-  const scopeLabel=scope==="all"?"All profiles":(selected[0]||"Selected profile");
+  const profiles=reportSelected.map(name=>profileByName(name)).filter(Boolean);
+  const compareMode=!!(spiderCompareA&&spiderCompareB&&spiderCompareA!==spiderCompareB&&names.includes(spiderCompareA)&&names.includes(spiderCompareB));
+  const reportSelected=compareMode?[spiderCompareA,spiderCompareB]:selected;
+  const scopeLabel=compareMode?`${spiderCompareA} vs ${spiderCompareB}`:(scope==="all"?"All profiles":(selected[0]||"Selected profile"));
   const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
   function reportChart(title,subtitle,html,cls=""){
     return `<section class="report-chart-section ${cls}"><div class="report-chart-heading"><span class="report-chart-number">${esc(title.split(".")[0]||"")}</span><h3>${esc(title.replace(/^\\d+\\.\\s*/,""))}</h3><p>${esc(subtitle)}</p></div><div class="report-chart-box">${html}</div></section>`;
@@ -2484,6 +2486,30 @@ function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
         </div>
       </section>`;
   }
+  function compareReport(a,b){
+    const va=profileSpiderData(a).filter(x=>x.value!==null), vb=profileSpiderData(b).filter(x=>x.value!==null);
+    const shared=compareValuesFor(a,b).filter(x=>x.a!==null&&x.b!==null);
+    const avgA=va.length?avg(va.map(x=>x.value)):null, avgB=vb.length?avg(vb.map(x=>x.value)):null;
+    return `
+      <section class="report-profile compare-report">
+        <div class="profile-report-header">
+          <div><div class="eyebrow">PROFILE COMPARISON</div><h2>${esc(a)} <span style="color:#98a2b3">vs</span> ${esc(b)}</h2></div>
+          <div class="report-mini-metrics">
+            <div><span>${esc(a)}</span><b>${avgA===null?"—":avgA.toFixed(1)}</b></div>
+            <div><span>${esc(b)}</span><b>${avgB===null?"—":avgB.toFixed(1)}</b></div>
+            <div><span>Shared</span><b>${shared.length}</b></div>
+          </div>
+        </div>
+        <div class="report-chart-grid">
+          ${reportChart("1. Horizontal Category Score","Both profiles — same category scale.",svgCompareCategoryBars(a,b),"chart-card")}
+          ${reportChart("2. Importance vs Score","Both profiles plotted together.",svgCompareImportanceScatter(a,b),"chart-card")}
+          ${reportChart("3. Spiderweb","Two profiles overlaid on the same radar.",compareRadarSVG(compareValuesFor(a,b)),"chart-card")}
+          ${reportChart("4. Scenario Horizontal Bars","Both profiles — scenario response.",svgCompareScenarioBars(a,b),"chart-card")}
+          ${reportChart("5. Monthly Trend Line","Both profiles on the same timeline.",svgCompareTrendLine(a,b),"chart-card")}
+        </div>
+      </section>`;
+  }
+
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relationship Compatibility Report — ${esc(scopeLabel)}</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;background:#f3f6fa;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}body{padding:10px}.report{width:min(1180px,100%);margin:auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 6px 24px rgba(16,24,40,.07)}
@@ -2498,7 +2524,7 @@ function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
 <section class="report-cover"><div class="cover-main"><div class="report-brand"><span class="report-brand-dot"></span>RELATIONSHIP COMPATIBILITY STUDIO</div><h1>Relationship Compatibility Report</h1><p class="cover-subtitle">Compact profile analytics — optimized for one-screen viewing and one-page landscape printing.</p><div class="scope-pill">Scope: ${esc(scopeLabel)}</div><div class="report-meta">Generated ${esc(new Date().toLocaleString())}</div></div>
 <div class="report-index"><strong>Analytics included</strong><div class="report-index-grid"><span>01<br>Category</span><span>02<br>Importance</span><span>03<br>Spiderweb</span><span>04<br>Scenario</span><span>05<br>Trend</span></div></div></section>
 <h2 class="report-section-title">Profile Summary</h2><table class="summary-table"><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr></thead><tbody>${profileTable||'<tr><td colspan="6">No profile selected.</td></tr>'}</tbody></table>
-${selected.length?selected.map(profileReport).join(""):'<div class="report-no-data">No profile selected.</div>'}
+${compareMode?compareReport(spiderCompareA,spiderCompareB):(reportSelected.length?reportSelected.map(profileReport).join(""):'<div class="report-no-data">No profile selected.</div>')}
 <div class="report-footer">Relationship Compatibility Studio • Compact analytics report • Blank source fields remain blank.</div>
 </main><script>window.onload=()=>setTimeout(()=>window.print(),250);<\/script></body></html>`;
 }
