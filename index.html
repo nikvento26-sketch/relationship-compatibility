@@ -1221,42 +1221,41 @@ body{
   gap:6px;
   min-width:0;
 }
-.menu-dropdown{position:relative}
-.menu-dropdown>summary{
-  list-style:none;
-  cursor:pointer;
-  display:flex;
+.menu-wrap{position:relative}
+.menu-trigger{
+  display:inline-flex;
   align-items:center;
   gap:5px;
-  border:1px solid rgba(0,0,0,.06);
-  background:#fff;
-  color:#475467;
-  border-radius:9px;
-  padding:6px 9px;
-  font-size:11px;
-  font-weight:650;
-  box-shadow:0 2px 7px rgba(0,0,0,.03);
+  border:1px solid rgba(0,0,0,.06)!important;
+  background:#fff!important;
+  color:#475467!important;
+  border-radius:9px!important;
+  padding:6px 9px!important;
+  font-size:11px!important;
+  font-weight:650!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.03)!important;
 }
-.menu-dropdown>summary::-webkit-details-marker{display:none}
-.menu-dropdown[open]>summary{
-  color:#0878d1;
-  border-color:rgba(8,120,209,.18);
-  background:#eef7ff;
+.menu-trigger:hover{background:#f2f7fb!important;color:#0878d1!important}
+.menu-trigger.active{
+  color:#0878d1!important;
+  border-color:rgba(8,120,209,.18)!important;
+  background:#eef7ff!important;
 }
-.menu-chevron{font-size:11px;line-height:1;transition:.15s ease}
-.menu-dropdown[open] .menu-chevron{transform:rotate(180deg)}
+.menu-chevron{font-size:10px;line-height:1}
 .menu-panel{
+  display:none;
   position:absolute;
   left:0;
   top:calc(100% + 6px);
-  z-index:1000;
-  min-width:185px;
+  z-index:10000;
+  min-width:200px;
   padding:6px;
   border:1px solid rgba(0,0,0,.07);
   border-radius:12px;
   background:rgba(255,255,255,.98);
-  box-shadow:0 14px 36px rgba(0,0,0,.12);
+  box-shadow:0 14px 36px rgba(0,0,0,.14);
 }
+.menu-panel.visible{display:block}
 .menu-option{
   display:block;
   width:100%;
@@ -1395,6 +1394,23 @@ function loadInitialOrSavedData(){
 }
 let db = loadInitialOrSavedData();
 let activeTab = "Dashboard";
+let openMenu = null;
+function toggleMenu(key){
+  openMenu = openMenu===key ? null : key;
+  render();
+}
+function selectMenuItem(tab){
+  activeTab=tab;
+  openMenu=null;
+  render();
+}
+document.addEventListener("click",(event)=>{
+  if(!openMenu)return;
+  if(event.target.closest(".menu-wrap"))return;
+  openMenu=null;
+  const nav=document.getElementById("nav");
+  if(nav && document.body.contains(nav)) render();
+});
 let compareA = null;
 let compareB = null;
 
@@ -1945,16 +1961,18 @@ function render(){
   ensureProfileColumnsForAll();
   const dataItems=["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"];
   const toolItems=["Spider Chart Data","Dashboard Setup"];
-  const makeMenu=(label,items)=>`<details class="menu-dropdown" ${items.includes(activeTab)?"open":""}>
-    <summary>${label}<span class="menu-chevron">⌄</span></summary>
-    <div class="menu-panel">${items.map(t=>`<button class="menu-option ${activeTab===t?"active":""}" onclick="activeTab='${t}';render()">${t}</button>`).join("")}</div>
-  </details>`;
+  const makeMenu=(key,label,items)=>`<div class="menu-wrap">
+    <button class="menu-trigger ${items.includes(activeTab)||openMenu===key?"active":""}" onclick="toggleMenu('${key}')">${label}<span class="menu-chevron">${openMenu===key?"▴":"▾"}</span></button>
+    <div class="menu-panel ${openMenu===key?"visible":""}">
+      ${items.map(t=>`<button class="menu-option ${activeTab===t?"active":""}" onclick="selectMenuItem('${t}')">${t}</button>`).join("")}
+    </div>
+  </div>`;
   document.getElementById("nav").innerHTML=`<div class="subnav-inner">
     <div class="subnav-label">Workspace</div>
     <div class="subnav-links">
-      ${makeMenu("Data",dataItems)}
-      ${makeMenu("Tools",toolItems)}
-      <button class="subnav-link ${activeTab==="Instructions"?"active":""}" onclick="activeTab='Dashboard';render()">Quick overview</button>
+      ${makeMenu("data","Data",dataItems)}
+      ${makeMenu("tools","Tools",toolItems)}
+      <button class="subnav-link" onclick="activeTab='Dashboard';openMenu=null;render()">Quick overview</button>
     </div>
     <div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div>
   </div>`;
