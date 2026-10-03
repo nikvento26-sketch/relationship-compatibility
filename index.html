@@ -1620,6 +1620,7 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
   .site-header .auth-status{padding:3px 4px!important}
   .site-toplinks button,.site-toplinks .toplink{padding:6px 8px!important;font-size:9px!important}
 }
+.compare-legend-prominent{margin:10px 0 2px;padding:7px 10px;border:1px solid rgba(0,0,0,.06);border-radius:10px;background:#fff;gap:18px;font-size:12px}.compare-legend-prominent i{width:10px;height:10px;display:inline-block;border-radius:50%}.compare-chart-card>.compare-legend-prominent{background:rgba(248,248,250,.8);border-top:0}
 </style>
 
 
@@ -2946,31 +2947,41 @@ function openComparisonWith(name){
 function comparisonPage(){
   const names=profileNamesEnhanced();
   const saved=db.__comparison?.multi||[];
-  if(!comparePeople.length){comparePeople=[saved[0]||names[0]||"",saved[1]||names[1]||"",saved[2]||names[2]||""];}
+  if(!comparePeople.length) comparePeople=[saved[0]||names[0]||"",saved[1]||names[1]||""];
   comparePeople=comparePeople.map((x,i)=>names.includes(x)?x:(i<2?(names[i]||""):""));
-  const series=multiProfileSeries();
-  const scored=series.map(s=>({name:s.name,avg:avg(s.values.map(x=>x.value).filter(v=>v!==null))}));
-  const optionsFor=sel=>`<option value="">Select person ${sel+1}</option>`+names.map(n=>`<option value="${esc(n)}" ${n===comparePeople[sel]?"selected":""}>${esc(n)}</option>`).join("");
-  return `<div class="card">
-    <h2>Compare Profiles</h2>
-    <div class="section-note">Compare 2 or 3 people at the same time. The chart uses each selected person's own profile scores.</div>
-    <div class="multi-compare-grid">
-      ${[0,1,2].map(i=>`<div class="compare-person"><div class="small">Person ${i+1}</div><select onchange="setMultiCompare(${i},this.value)" ${names.length<2&&i>0?"disabled":""}>${optionsFor(i)}</select></div>`).join("")}
-    </div>
-    <div class="grid kpis" style="margin-bottom:18px">
-      ${[0,1,2].map(i=>{const x=scored[i];return `<div class="kpi"><div class="label">${esc(x?.name||"Person "+(i+1))}</div><div class="value">${x?.avg==null?"—":x.avg.toFixed(1)+"/10"}</div></div>`}).join("")}
-      <div class="kpi"><div class="label">Profiles compared</div><div class="value">${series.length}</div></div>
-    </div>
-    <div class="card" style="margin:0">
-      <h2>Multi-Profile Graph</h2>
-      <div class="multi-compare-chart">${svgMultiCompare(series)}</div>
-      <div class="interactive-tip">Hover over data points for the category and score.</div>
-    </div>
-    <div class="card" style="margin-top:18px">
-      <h2>Comparison Snapshot</h2>
-      <div class="table-wrap"><table class="compare-table"><thead><tr><th>Category</th>${series.map(s=>`<th>${esc(s.name)}</th>`).join("")}</tr></thead><tbody>${[...new Set(series.flatMap(s=>s.values.map(x=>x.name)))].map(cat=>`<tr><td>${esc(cat)}</td>${series.map(s=>{const v=s.values.find(x=>x.name===cat)?.value;return `<td class="compare-score">${v==null?"—":v}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
-    </div>
-  </div>`;
+  const a=comparePeople[0]||"", b=comparePeople[1]||"";
+  if(names.length<2)return '<div class="card"><h2>Compare Profiles</h2><div class="section-note">Add at least two profiles to use comparison.</div><button class="primary" onclick="activeTab=\'Profiles\';render()">Go to Profiles</button></div>';
+  const optionsFor=sel=>'<option value="">Select profile '+(sel+1)+'</option>'+names.map(n=>'<option value="'+esc(n)+'" '+(n===comparePeople[sel]?'selected':'')+'>'+esc(n)+'</option>').join("");
+  const vals=compareValuesFor(a,b);
+  const shared=vals.filter(x=>x.a!==null&&x.b!==null);
+  const avgA=shared.length?avg(shared.map(x=>x.a)):null, avgB=shared.length?avg(shared.map(x=>x.b)):null;
+  const legend=\`
+    <div class="compare-dataset-legend compare-legend-prominent" aria-label="Chart legend">
+      <span><i style="background:#0071e3"></i><strong>\${esc(a)}</strong></span>
+      <span><i style="background:#af52de"></i><strong>\${esc(b)}</strong></span>
+    </div>\`;
+  return '<div class="card">'+
+    '<h2>Compare Profiles</h2><div class="section-note">Select two profiles. All five analytics charts below use both profiles with a consistent colour legend.</div>'+
+    '<div class="multi-compare-grid" style="grid-template-columns:1fr 1fr">'+
+      '<div class="compare-person"><div class="small">Profile 1</div><select onchange="setMultiCompare(0,this.value)">'+optionsFor(0)+'</select></div>'+
+      '<div class="compare-person"><div class="small">Profile 2</div><select onchange="setMultiCompare(1,this.value)">'+optionsFor(1)+'</select></div>'+
+    '</div>'+legend+
+    '<div class="grid kpis" style="margin:12px 0 18px;grid-template-columns:repeat(3,minmax(0,1fr))">'+
+      '<div class="kpi"><div class="label">'+esc(a)+' average</div><div class="value">'+(avgA===null?'—':avgA.toFixed(1))+'</div></div>'+
+      '<div class="kpi"><div class="label">'+esc(b)+' average</div><div class="value">'+(avgB===null?'—':avgB.toFixed(1))+'</div></div>'+
+      '<div class="kpi"><div class="label">Shared categories</div><div class="value">'+shared.length+'</div></div>'+
+    '</div>'+
+    '<div class="compare-chart-grid">'+
+      '<div class="card compare-chart-card"><h2>1. Horizontal Category Score</h2><div class="section-note">Both profiles by category.</div><div class="compare-chart auto-height">'+svgCompareCategoryBars(a,b)+'</div>'+legend+'</div>'+
+      '<div class="card compare-chart-card"><h2>2. Importance vs Score Scatter</h2><div class="section-note">Both profiles on the same importance scale.</div><div class="compare-chart">'+svgCompareImportanceScatter(a,b)+'</div>'+legend+'</div>'+
+      '<div class="card compare-chart-card"><h2>3. Spiderweb</h2><div class="section-note">Both profiles overlaid on the same radar.</div><div class="compare-chart">'+compareRadarSVG(vals)+'</div>'+legend+'</div>'+
+      '<div class="card compare-chart-card"><h2>4. Scenario Horizontal Bars</h2><div class="section-note">Both profiles for every scenario.</div><div class="compare-chart auto-height">'+svgCompareScenarioBars(a,b)+'</div>'+legend+'</div>'+
+      '<div class="card compare-chart-card compare-chart-wide"><h2>5. Monthly Trend Line</h2><div class="section-note">Both profiles on the same timeline.</div><div class="compare-chart">'+svgCompareTrendLine(a,b)+'</div>'+legend+'</div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:18px"><h2>Comparison Table</h2><div class="section-note">Side-by-side values for both selected profiles.</div><div class="table-wrap"><table class="compare-table"><thead><tr><th>Category</th><th>'+esc(a)+'</th><th>'+esc(b)+'</th><th>Gap</th></tr></thead><tbody>'+
+      vals.map(x=>'<tr><td>'+esc(x.name)+'</td><td class="compare-score">'+(x.a===null?'—':x.a)+'</td><td class="compare-score">'+(x.b===null?'—':x.b)+'</td><td>'+(x.a===null||x.b===null?'—':Math.abs(x.a-x.b).toFixed(1))+'</td></tr>').join("")+
+    '</tbody></table></div></div>'+
+  '</div>';
 }
 
 ensureProfileColumnsForAll();
