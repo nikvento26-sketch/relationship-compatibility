@@ -2955,11 +2955,11 @@ function comparisonPage(){
   const vals=compareValuesFor(a,b);
   const shared=vals.filter(x=>x.a!==null&&x.b!==null);
   const avgA=shared.length?avg(shared.map(x=>x.a)):null, avgB=shared.length?avg(shared.map(x=>x.b)):null;
-  const legend=\`
+  const legend=`
     <div class="compare-dataset-legend compare-legend-prominent" aria-label="Chart legend">
-      <span><i style="background:#0071e3"></i><strong>\${esc(a)}</strong></span>
-      <span><i style="background:#af52de"></i><strong>\${esc(b)}</strong></span>
-    </div>\`;
+      <span><i style="background:#0071e3"></i><strong>${esc(a)}</strong></span>
+      <span><i style="background:#af52de"></i><strong>${esc(b)}</strong></span>
+    </div>`;
   return '<div class="card">'+
     '<h2>Compare Profiles</h2><div class="section-note">Select two profiles. All five analytics charts below use both profiles with a consistent colour legend.</div>'+
     '<div class="multi-compare-grid" style="grid-template-columns:1fr 1fr">'+
