@@ -2455,9 +2455,9 @@ function drawDashboardAnalytics(){
 function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
   const names=profileNamesEnhanced();
   const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
-  const profiles=reportSelected.map(name=>profileByName(name)).filter(Boolean);
   const compareMode=!!(spiderCompareA&&spiderCompareB&&spiderCompareA!==spiderCompareB&&names.includes(spiderCompareA)&&names.includes(spiderCompareB));
   const reportSelected=compareMode?[spiderCompareA,spiderCompareB]:selected;
+  const profiles=reportSelected.map(name=>profileByName(name)).filter(Boolean);
   const scopeLabel=compareMode?`${spiderCompareA} vs ${spiderCompareB}`:(scope==="all"?"All profiles":(selected[0]||"Selected profile"));
   const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
   function reportChart(title,subtitle,html,cls=""){
