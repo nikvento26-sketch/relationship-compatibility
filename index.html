@@ -3478,22 +3478,36 @@ window.firebaseCloudSave = async function(silent=false, saveReason="Manual Save"
     return false;
   }
   try{
-    const dashboardJson=JSON.stringify(db);
-    // Store the dashboard as a JSON string so nested arrays / complex structures
-    // are preserved without Firestore rejecting unsupported nested array values.
-    await setDoc(doc(firestore,"dashboards",currentFirebaseUser.uid),{
-      dashboardJson,
-      updatedAt:serverTimestamp(),
-      ownerUid:currentFirebaseUser.uid
+    // IMPORTANT: Firestore rejects nested arrays when they are sent as native
+    // Firestore data. The dashboard contains complex/nested arrays, so we
+    // deliberately store the complete dashboard as ONE plain string field.
+    const serialized = JSON.stringify(db);
+    if(typeof serialized !== "string"){
+      throw new Error("Dashboard data could not be serialized.");
+    }
+    const dashboardJson = String(serialized);
+
+    const dashboardRef = doc(firestore,"dashboards",currentFirebaseUser.uid);
+
+    // Only plain strings + serverTimestamp are sent to Firestore here.
+    // No dashboard arrays/objects are passed directly to setDoc().
+    await setDoc(dashboardRef,{
+      schemaVersion: 2,
+      dashboardJson: dashboardJson,
+      updatedAt: serverTimestamp(),
+      ownerUid: String(currentFirebaseUser.uid)
     },{merge:true});
+
+    // Keep a separate audit trail for every manual save.
     if(!silent){
       await addDoc(collection(firestore,"dashboards",currentFirebaseUser.uid,"saveLogs"),{
-        savedAt:serverTimestamp(),
-        email:currentFirebaseUser.email||"",
-        action:saveReason,
-        type:"manual-save"
+        savedAt: serverTimestamp(),
+        email: String(currentFirebaseUser.email||""),
+        action: String(saveReason||"Manual Save"),
+        type: "manual-save"
       });
     }
+
     if(!silent)msg("Saved to Firebase and added to Save History.","ok");
     return true;
   }catch(err){
