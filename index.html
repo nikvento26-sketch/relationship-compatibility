@@ -2410,144 +2410,53 @@ function reportHTML(scope="all"){
   const names=profileNamesEnhanced();
   const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
   const profiles=selected.map(name=>profileByName(name)).filter(Boolean);
-  const spider=db["Spider Chart Data"]||{headers:[],rows:[]};
-  const scenario=db["Scenario Study"]||{headers:[],rows:[]};
-  const scopeLabel=scope==="all"?"All profiles":scope;
-
+  const scopeLabel=scope==="all"?"All profiles":(selected[0]||"Selected profile");
   const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
-  const headerCells=selected.map(n=>`<th>${esc(n)}</th>`).join("");
-  const scoreRows=(spider.rows||[]).map(r=>{
-    const cat=String(r?.[0]||"");
-    const cells=selected.map(name=>{
-      const idx=findHeaderIndex(spider.headers||[],name);
-      const v=idx>=0?valNum(r?.[idx]):null;
-      return `<td>${v===null?"":v}</td>`;
-    }).join("");
-    return `<tr><td>${esc(cat)}</td>${cells}</tr>`;
-  }).join("");
-
-  // Report radar chart — uses exactly the selected report profiles.
-  const radarData=(spider.rows||[]).map(r=>{
-    const name=String(r?.[0]||"").trim();
-    if(!name)return null;
-    return {name, values:selected.map(person=>{
-      const idx=findHeaderIndex(spider.headers||[],person);
-      return idx>=0?valNum(r?.[idx]):null;
-    })};
-  }).filter(x=>x&&x.values.some(v=>v!==null));
-
-  function reportRadarSVG(){
-    if(!radarData.length)return '<div class="report-empty">No spider-chart scores available for this report.</div>';
-    const w=760,h=440,cx=380,cy=215,R=145,n=radarData.length;
-    const colors=["#0071e3","#af52de","#34a853","#ff9500"];
-    const angle=i=>(-Math.PI/2)+(i*2*Math.PI/n);
-    const pt=(i,v,rr=R)=>{
-      const a=angle(i),safe=v==null?0:Math.max(0,Math.min(10,v));
-      return [cx+(rr*(safe/10))*Math.cos(a),cy+(rr*(safe/10))*Math.sin(a)];
-    };
-    const ringPts=v=>radarData.map((_,i)=>{
-      const a=angle(i),rr=R*(v/10);
-      return [cx+rr*Math.cos(a),cy+rr*Math.sin(a)].join(",");
-    }).join(" ");
-    let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Compatibility radar chart">`;
-    [2,4,6,8,10].forEach(v=>out+=`<polygon points="${ringPts(v)}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`);
-    radarData.forEach((d,i)=>{
-      const a=angle(i),x=cx+R*Math.cos(a),y=cy+R*Math.sin(a);
-      const lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
-      let anchor="middle";if(lx<cx-12)anchor="end";if(lx>cx+12)anchor="start";
-      out+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#edf0f3"/><text x="${lx}" y="${ly+4}" text-anchor="${anchor}" font-size="10" fill="#667085">${esc(shortLabel(d.name,20))}</text>`;
-    });
-    selected.forEach((person,pi)=>{
-      const pts=radarData.map((d,i)=>pt(i,d.values[pi]??0)).map(p=>p.join(",")).join(" ");
-      const color=colors[pi%colors.length];
-      out+=`<polygon points="${pts}" fill="${color}" fill-opacity=".10" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
-      radarData.forEach((d,i)=>{
-        if(d.values[pi]!==null){
-          const [x,y]=pt(i,d.values[pi]);
-          out+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
-        }
-      });
-    });
-    out+=`</svg><div class="report-legend">${selected.map((p,i)=>`<span><i style="background:${colors[i%colors.length]}"></i>${esc(p)}</span>`).join("")}</div>`;
-    return out;
+  function reportChart(title,subtitle,html,cls=""){
+    return `<section class="report-chart-section ${cls}"><div class="report-chart-heading"><div><div class="report-chart-number">${esc(title.split(".")[0]||"")}</div><h3>${esc(title.replace(/^\\d+\\.\\s*/,""))}</h3><p>${esc(subtitle)}</p></div></div><div class="report-chart-box">${html}</div></section>`;
   }
-
-  const scenarioRows=(scenario.rows||[]).map(r=>{
-    const label=String(r?.[1]||r?.[0]||"").trim();
-    if(!label)return null;
-    return {name:label,values:selected.map(person=>{
-      const idx=findHeaderIndex(scenario.headers||[],person+" Response Score (1-10)");
-      return idx>=0?valNum(r?.[idx]):null;
-    })};
-  }).filter(x=>x&&x.values.some(v=>v!==null));
-
-  function reportScenarioSVG(){
-    if(!scenarioRows.length)return '<div class="report-empty">No scenario scores available for this report.</div>';
-    const labelW=245,left=labelW,right=58,top=28,rowH=42,bottom=30;
-    const w=820,h=top+scenarioRows.length*rowH+bottom,barW=w-left-right;
-    const colors=["#af52de","#0071e3","#34a853","#ff9500"];
-    let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scenario response chart">`;
-    [0,2,4,6,8,10].forEach(v=>{
-      const x=left+(v/10)*barW;
-      out+=`<line x1="${x}" y1="${top-8}" x2="${x}" y2="${h-bottom}" stroke="#edf0f3"/><text x="${x}" y="${top-12}" text-anchor="middle" font-size="9" fill="#98a2b3">${v}</text>`;
-    });
-    scenarioRows.forEach((d,i)=>{
-      const y=top+i*rowH+6;
-      out+=`<text x="8" y="${y+12}" font-size="10" fill="#475467">${esc(shortLabel(d.name,34))}</text>`;
-      selected.forEach((person,pi)=>{
-        const v=d.values[pi];
-        if(v===null)return;
-        const yy=y+pi*8;
-        const bw=(v/10)*barW;
-        const color=colors[pi%colors.length];
-        out+=`<rect x="${left}" y="${yy}" width="${Math.max(3,bw)}" height="6" rx="3" fill="${color}"/><text x="${Math.min(w-4,left+bw+5)}" y="${yy+6}" font-size="8" fill="#667085">${v}</text>`;
-      });
-    });
-    out+=`</svg><div class="report-legend">${selected.map((p,i)=>`<span><i style="background:${colors[i%colors.length]}"></i>${esc(p)}</span>`).join("")}</div>`;
-    return out;
+  function trendReport(name){
+    const data=trendFor(name);
+    if(data.length)return svgTrendLine(name);
+    return `<div class="report-no-data"><strong>Monthly Trend Line</strong><span>No monthly trend records have been entered for ${esc(name)} yet.</span><small>Add Date + Profile + category scores in <b>Monthly Trend</b> to populate this chart.</small></div>`;
   }
-
-  const chartSections=`
-    <section class="report-chart-section">
-      <h2>Compatibility Profile</h2>
-      <p class="muted">Visual comparison of the selected profile score data.</p>
-      <div class="report-chart">${reportRadarSVG()}</div>
-    </section>
-    <section class="report-chart-section">
-      <h2>Scenario Response</h2>
-      <p class="muted">Scenario scores for the selected report scope.</p>
-      <div class="report-chart report-scenario">${reportScenarioSVG()}</div>
-    </section>`;
-
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relationship Compatibility Report</title>
+  function profileReport(name){
+    const values=profileSpiderData(name).map(x=>x.value).filter(v=>v!==null);
+    const scenarioValues=profileScenarioData(name).map(x=>x.value).filter(v=>v!==null);
+    const avgScore=values.length?avg(values):null;
+    const scenarioAvg=scenarioValues.length?avg(scenarioValues):null;
+    const row=profileByName(name);
+    return `
+      <section class="report-profile">
+        <div class="profile-report-header"><div><div class="eyebrow">PROFILE ANALYTICS</div><h2>${esc(name)}</h2><p>Five-chart analytics view using the existing dashboard data.</p></div>
+          <div class="report-mini-metrics"><div><span>Category average</span><b>${avgScore===null?"—":avgScore.toFixed(1)+"/10"}</b></div><div><span>Scenario average</span><b>${scenarioAvg===null?"—":scenarioAvg.toFixed(1)+"/10"}</b></div></div>
+        </div>
+        ${reportChart("1. Horizontal Category Score","Category scores ranked from highest to lowest.",svgCategoryScoreBars(name))}
+        ${reportChart("2. Importance vs Score Scatter","Importance is compared with the selected profile's category score.",svgImportanceScoreScatter(name),"scatter-chart")}
+        ${reportChart("3. Spiderweb","Single-profile compatibility shape across the available categories.",svgSingleProfileRadar(name),"spider-chart")}
+        ${reportChart("4. Scenario Horizontal Bars","Response scores across the scenario study.",svgSingleProfileBars(name),"scenario-chart")}
+        ${reportChart("5. Monthly Trend Line","Overall trend over time using the Monthly Trend sheet.",trendReport(name),"trend-chart")}
+        ${row?`<div class="report-profile-details"><div><span>Occupation / Study</span><b>${esc(row[4]||"—")}</b></div><div><span>Education</span><b>${esc(row[5]||"—")}</b></div><div><span>Personality</span><b>${esc(row[6]||"—")}</b></div><div><span>Interests</span><b>${esc(row[7]||"—")}</b></div></div>`:""}
+      </section>`;
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relationship Compatibility Report — ${esc(scopeLabel)}</title>
 <style>
-*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#172033;background:#f6f7f9;margin:0;padding:28px;line-height:1.45}
-.report{max-width:980px;margin:0 auto;background:#fff;padding:34px;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
-h1{margin:0 0 5px;font-size:28px;letter-spacing:-.03em}h2{margin:30px 0 8px;font-size:18px;letter-spacing:-.02em}
-.muted{color:#667085;font-size:12px}.scope{display:inline-block;padding:5px 9px;background:#f1f3f7;border-radius:999px;font-size:11px}
-table{border-collapse:collapse;width:100%;font-size:11px;margin-top:10px}th,td{border:1px solid #e5e7eb;padding:7px;text-align:left;vertical-align:top}th{background:#f8fafc;color:#475467}
-.report-chart-section{break-inside:avoid}.report-chart{margin-top:10px;border:1px solid #e5e7eb;border-radius:16px;padding:12px;background:#fcfcfd;overflow:hidden}.report-chart svg{width:100%;height:auto;display:block}.report-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#667085}.report-legend span{display:inline-flex;align-items:center;gap:6px}.report-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}.report-empty{padding:50px;text-align:center;color:#98a2b3;font-style:italic}
-.report-scenario{overflow-x:auto}.report-scenario svg{min-width:700px}
-@media(max-width:700px){body{padding:10px}.report{padding:18px;border-radius:14px}h1{font-size:23px}.report-chart{padding:7px}.report-scenario svg{min-width:650px}table{font-size:10px}th,td{padding:6px}}
-@media print{body{background:#fff;padding:0}.report{box-shadow:none;max-width:none;padding:15px;border-radius:0}.report-chart-section{page-break-inside:avoid}.report-chart{border:1px solid #ddd}.report-scenario svg{min-width:0}h2{page-break-after:avoid}}
+*{box-sizing:border-box}html{background:#eef2f7}body{margin:0;padding:24px;background:#eef2f7;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.45}.report{max-width:1000px;margin:0 auto;background:#fff;border-radius:22px;padding:38px;box-shadow:0 12px 40px rgba(16,24,40,.08)}
+.report-cover{padding-bottom:26px;border-bottom:1px solid #e5e7eb}.report-brand{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#0071e3}.report-brand-dot{width:10px;height:10px;border-radius:50%;background:#0071e3;display:inline-block}h1{margin:10px 0 5px;font-size:32px;line-height:1.1;letter-spacing:-.035em}.cover-subtitle{margin:0;color:#667085;font-size:13px}.scope-pill{display:inline-block;margin-top:15px;padding:7px 11px;border-radius:999px;background:#eef5ff;color:#0068d8;font-size:11px;font-weight:700}.report-meta{margin-top:9px;color:#98a2b3;font-size:10px}
+.report-index{margin-top:25px;padding:17px 18px;border:1px solid #e5e7eb;border-radius:15px;background:#fafbfc}.report-index strong{font-size:12px}.report-index-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}.report-index-grid span{padding:8px 6px;background:#fff;border:1px solid #edf0f3;border-radius:9px;text-align:center;font-size:9px;color:#667085}.report-section-title{margin:32px 0 12px;font-size:19px;letter-spacing:-.02em}
+table{border-collapse:collapse;width:100%;font-size:10px}th,td{border:1px solid #e5e7eb;padding:7px;text-align:left;vertical-align:top}th{background:#f8fafc;color:#475467;font-weight:700}
+.report-profile{margin-top:38px;padding-top:8px}.profile-report-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-top:2px solid #172033;padding-top:18px}.eyebrow{font-size:9px;letter-spacing:.12em;font-weight:800;color:#0071e3}.profile-report-header h2{margin:4px 0 2px;font-size:25px;letter-spacing:-.03em}.profile-report-header p{margin:0;color:#667085;font-size:11px}.report-mini-metrics{display:flex;gap:8px}.report-mini-metrics div{min-width:110px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#fafbfc}.report-mini-metrics span{display:block;color:#98a2b3;font-size:8px;text-transform:uppercase;letter-spacing:.06em}.report-mini-metrics b{display:block;margin-top:2px;font-size:16px}
+.report-chart-section{margin-top:20px;break-inside:avoid;page-break-inside:avoid}.report-chart-heading{margin-bottom:8px}.report-chart-number{font-size:8px;font-weight:800;letter-spacing:.1em;color:#98a2b3}.report-chart-heading h3{display:inline;font-size:16px;margin:0 5px 0 0;letter-spacing:-.02em}.report-chart-heading p{display:inline;color:#667085;font-size:10px}.report-chart-box{border:1px solid #e5e7eb;border-radius:15px;padding:10px;background:#fcfcfd;overflow:hidden}.report-chart-box>svg{display:block;width:100%;height:auto;max-width:100%}.report-chart-box .analytics-detail-table-wrap{max-height:none;overflow:visible;margin-top:8px}.report-chart-box .analytics-detail-table{font-size:9px}.report-chart-box .analytics-detail-table th,.report-chart-box .analytics-detail-table td{padding:5px}.report-chart-box .chart-legend,.report-chart-box .compare-dataset-legend,.report-chart-box .importance-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:7px;font-size:9px;color:#667085}.report-chart-box .chart-legend em{font-size:8px}.report-chart-box .priority-pill{font-size:8px}
+.report-no-data{min-height:180px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px;color:#667085;background:#fafbfc;border:1px dashed #d0d5dd;border-radius:12px}.report-no-data strong{font-size:13px;color:#344054}.report-no-data span{font-size:10px;margin-top:4px}.report-no-data small{font-size:9px;color:#98a2b3;margin-top:8px}.report-profile-details{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;break-inside:avoid}.report-profile-details div{padding:10px;border:1px solid #e5e7eb;border-radius:11px;background:#fafbfc}.report-profile-details span{display:block;font-size:8px;color:#98a2b3;text-transform:uppercase;letter-spacing:.05em}.report-profile-details b{display:block;margin-top:3px;font-size:10px;font-weight:600}.report-footer{margin-top:35px;padding-top:15px;border-top:1px solid #e5e7eb;color:#98a2b3;font-size:9px;text-align:center}
+@media(max-width:700px){body{padding:8px}.report{padding:20px;border-radius:14px}h1{font-size:25px}.report-index-grid{grid-template-columns:repeat(2,1fr)}.profile-report-header{flex-direction:column}.report-mini-metrics{width:100%}.report-mini-metrics div{flex:1}.report-profile-details{grid-template-columns:repeat(2,1fr)}.report-chart-box{overflow-x:auto}.report-chart-box>svg{min-width:620px}}
+@media print{@page{size:A4;margin:10mm}html,body{background:#fff}body{padding:0}.report{max-width:none;box-shadow:none;border-radius:0;padding:0}.report-cover{page-break-after:always}.report-profile{page-break-before:always}.report-profile:first-of-type{page-break-before:auto}.report-chart-section{page-break-inside:avoid}.report-chart-box{border:1px solid #ddd}.report-chart-box>svg{min-width:0!important}.report-index-grid{grid-template-columns:repeat(5,1fr)}}
 </style></head><body><main class="report">
-<h1>Relationship Compatibility Study Report</h1>
-<div class="muted">Scope: <span class="scope">${esc(scopeLabel)}</span></div>
-<div class="muted">Generated ${new Date().toLocaleString()}</div>
-
-<h2>Profiles</h2>
-<table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profileTable}</table>
-
-${chartSections}
-
-<h2>Spider Chart Data</h2>
-<table><tr><th>Category</th>${headerCells}</tr>${scoreRows}</table>
-
-<h2>Scenario Study</h2>
-<table><tr><th>Scenario</th>${selected.map(n=>`<th>${esc(n)}</th>`).join("")}</tr>${scenarioRows.map(r=>`<tr><td>${esc(r.name)}</td>${r.values.map(v=>`<td>${v===null?"":v}</td>`).join("")}</tr>`).join("")}</table>
-
-<p class="muted">This report is a descriptive data summary. Blank fields remain blank.</p>
-</main><script>window.onload=()=>window.print();<\/script></body></html>`;
+<section class="report-cover"><div class="report-brand"><span class="report-brand-dot"></span>RELATIONSHIP COMPATIBILITY STUDIO</div><h1>Relationship Compatibility Report</h1><p class="cover-subtitle">Structured analytics report with profile-specific charts and supporting data.</p><div class="scope-pill">Report scope: ${esc(scopeLabel)}</div><div class="report-meta">Generated ${esc(new Date().toLocaleString())}</div>
+<div class="report-index"><strong>Analytics included</strong><div class="report-index-grid"><span>01<br>Category Score</span><span>02<br>Importance vs Score</span><span>03<br>Spiderweb</span><span>04<br>Scenario Bars</span><span>05<br>Monthly Trend</span></div></div>
+<h2 class="report-section-title">Profile Summary</h2><table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr></thead><tbody>${profileTable||'<tr><td colspan="6">No profile selected.</td></tr>'}</tbody></table></section>
+${selected.length?selected.map(profileReport).join(""):'<div class="report-no-data"><strong>No profile selected</strong><span>Choose a profile before generating the report.</span></div>'}
+<div class="report-footer">Relationship Compatibility Studio • Descriptive data report • Blank source fields remain blank.</div>
+</main><script>window.onload=()=>setTimeout(()=>window.print(),250);<\/script></body></html>`;
 }
 function openReportOptions(){
   const list=document.getElementById("reportOptionsList");
