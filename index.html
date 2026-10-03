@@ -2713,8 +2713,19 @@ function toolsPage(){
       '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Weightage Settings\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚖ Weightage Settings</strong><span class="small">Set the importance of each relationship element from 1–10.</span></button>'+
       '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Element Settings\';openMenu=null;render()"><strong style="display:block;font-size:15px">✎ Element Settings</strong><span class="small">Rename, add, delete and describe relationship elements.</span></button>'+
       '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Spider Chart Data\';openMenu=null;render()"><strong style="display:block;font-size:15px">◌ Spider Chart Data</strong><span class="small">Edit the dedicated spider chart values.</span></button>'+
+      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Save History\';openMenu=null;render()"><strong style="display:block;font-size:15px">🕘 Save History</strong><span class="small">See when dashboard data was saved to Firebase.</span></button>'+
       '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Dashboard Setup\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚙ Dashboard Setup</strong><span class="small">Review the dashboard modules and planned analysis.</span></button>'+
     '</div>'+
+  '</div>';
+}
+
+function renderSaveHistory(){
+  return '<div class="card save-history-card">'+
+    '<div class="save-history-head">'+
+      '<div><div class="tool-settings-kicker">FIREBASE / AUDIT</div><h2 class="save-history-title">Save History</h2><p class="save-history-sub">Manual Save Data actions are logged in your private Firebase account.</p></div>'+
+      '<button onclick="activeTab=\'Dashboard\';openMenu=null;render()">Back to Dashboard</button>'+
+    '</div>'+
+    '<div id="saveHistoryList" class="save-history-list"><div class="save-history-empty">Loading save history…</div></div>'+
   '</div>';
 }
 
@@ -2722,7 +2733,7 @@ function render(){
   try{
     ensureProfileColumnsForAll();
     const dataItems=["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"];
-    const toolItems=["Weightage Settings","Element Settings","Spider Chart Data","Dashboard Setup"];
+    const toolItems=["Weightage Settings","Element Settings","Spider Chart Data","Save History","Dashboard Setup"];
     const makeMenu=(key,label,items)=>'<div class="menu-wrap"><button class="menu-trigger '+(items.includes(activeTab)||openMenu===key?'active':'')+'" onclick="toggleMenu(\''+key+'\')">'+label+'<span class="menu-chevron">'+(openMenu===key?'▴':'▾')+'</span></button><div class="menu-panel '+(openMenu===key?'visible':'')+'">'+items.map(t=>'<button class="menu-option '+(activeTab===t?'active':'')+'" onclick="selectMenuItem(\''+t+'\')">'+t+'</button>').join('')+'</div></div>';
     document.getElementById("nav").innerHTML='<div class="subnav-inner"><div class="subnav-label">Workspace</div><div class="subnav-links">'+'<button class="menu-trigger" onclick="openDataManager()">Data <span class="menu-chevron">✎</span></button>'+makeMenu("tools","Tools",toolItems)+'<button class="subnav-link" onclick="activeTab=\'Dashboard\';openMenu=null;render()">Quick overview</button></div><div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div></div>';
     let content="";
@@ -2733,9 +2744,11 @@ function render(){
     else if(activeTab==="Tools") content=toolsPage();
     else if(activeTab==="Weightage Settings") content=renderWeightageSettings();
     else if(activeTab==="Element Settings") content=renderElementSettings();
+    else if(activeTab==="Save History") content=renderSaveHistory();
     else content='<div class="card"><div class="toolbar"><div><h2 style="margin:0">'+esc(activeTab)+'</h2><div class="muted">'+(activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":"")+'</div></div></div>'+renderTable(activeTab)+'</div>';
     document.getElementById("app").innerHTML=content;
     if(activeTab==="Dashboard") setTimeout(drawDashboardAnalytics,0);
+    if(activeTab==="Save History") setTimeout(()=>{ if(typeof window.loadSaveHistory==="function") window.loadSaveHistory(); },0);
   }catch(err){
     console.error("Dashboard render failed:",err);
     document.getElementById("app").innerHTML='<div class="card" style="margin:24px"><h2>Dashboard needs a refresh</h2><p class="section-note">The original data is still preserved. Use the button below to restore the dashboard view.</p><button class="primary" onclick="openMenu=null;render()">Refresh Dashboard</button><button style="margin-left:8px" onclick="resetToOriginalData()">Reset to Original Data</button><details style="margin-top:16px"><summary>Technical details</summary><pre style="white-space:pre-wrap;font-size:11px;color:#667085">'+esc(String(err?.stack||err))+'</pre></details></div>';
@@ -2824,6 +2837,19 @@ function reportHTML(scope="all", spiderCompareA="", spiderCompareB=""){
 .report-footer{margin-top:8px;padding-top:6px;border-top:1px solid #e5e7eb;color:#98a2b3;font-size:6px;text-align:center}
 @media(max-width:700px){body{padding:4px}.report{padding:10px;border-radius:10px}.report-cover{grid-template-columns:1fr}.report h1{font-size:19px}.report-index-grid{grid-template-columns:repeat(5,1fr)}.report-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.report-chart-section:nth-child(5){grid-column:1/-1}.report-chart-box{height:135px}.report-chart-heading{gap:2px}.report-chart-heading h3{font-size:7px}.report-chart-heading p{font-size:5px}.report-chart-number{font-size:5px}.profile-report-header{align-items:flex-start}.summary-table{display:block;overflow-x:auto;white-space:nowrap}}
 @media print{@page{size:A4 landscape;margin:7mm}html,body{background:#fff}body{padding:0}.report{position:relative;width:100%;height:196mm;max-width:none;overflow:hidden;box-shadow:none;border-radius:0;padding:0}.report-cover{grid-template-columns:1.2fr 2fr}.report-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-chart-section:nth-child(5){grid-column:1/-1}.report-chart-box{height:132px}.report-profile{page-break-before:auto;break-before:auto;page-break-after:auto;break-after:auto}.report-chart-section{page-break-inside:avoid;break-inside:avoid}.report-chart-box>svg{min-width:0!important}.report-footer{position:absolute;left:0;right:0;bottom:0;margin:0;padding-top:4px;font-size:5.5px}.report-cover{page-break-after:auto;break-after:auto}}
+
+/* ===== Firebase Save History ===== */
+.save-history-card{overflow:hidden}
+.save-history-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.save-history-title{margin:2px 0;font-size:20px;letter-spacing:-.03em}
+.save-history-sub{margin:0;color:#667085;font-size:11px}
+.save-history-list{display:grid;gap:8px}
+.save-history-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:11px 13px;border:1px solid rgba(0,0,0,.06);border-radius:13px;background:#fff}
+.save-history-main strong{display:block;font-size:12px}
+.save-history-main span{display:block;margin-top:3px;color:#667085;font-size:11px}
+.save-history-time{font-size:11px;font-weight:700;color:#0878d1;white-space:nowrap}
+.save-history-empty{padding:28px 12px;text-align:center;color:#667085;border:1px dashed rgba(0,0,0,.10);border-radius:13px;background:#fafafa}
+@media(max-width:560px){.save-history-row{grid-template-columns:1fr}.save-history-time{white-space:normal}}
 </style></head><body><main class="report">
 <section class="report-cover"><div class="cover-main"><div class="report-brand"><span class="report-brand-dot"></span>RELATIONSHIP COMPATIBILITY STUDIO</div><h1>Relationship Compatibility Report</h1><p class="cover-subtitle">Compact profile analytics — optimized for one-screen viewing and one-page landscape printing.</p><div class="scope-pill">Scope: ${esc(scopeLabel)}</div><div class="report-meta">Generated ${esc(new Date().toLocaleString())}</div></div>
 <div class="report-index"><strong>Analytics included</strong><div class="report-index-grid"><span>01<br>Category</span><span>02<br>Importance</span><span>03<br>Spiderweb</span><span>04<br>Scenario</span><span>05<br>Trend</span></div></div></section>
@@ -3378,7 +3404,7 @@ import {
   createUserWithEmailAndPassword, sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, addDoc, query, orderBy, limit, getDocs
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const cfg = window.FIREBASE_CONFIG || {};
@@ -3440,7 +3466,7 @@ async function loadCloud(user){
   }
 }
 
-window.firebaseCloudSave = async function(silent=false){
+window.firebaseCloudSave = async function(silent=false, saveReason="Manual Save"){
   if(!isConfigured || !firestore || !currentFirebaseUser){
     if(!silent)msg(isConfigured?"Please sign in before saving online.":"Firebase is not configured yet. The dashboard remains available in local mode.","error");
     return false;
@@ -3453,7 +3479,15 @@ window.firebaseCloudSave = async function(silent=false){
       updatedAt:serverTimestamp(),
       ownerUid:currentFirebaseUser.uid
     },{merge:true});
-    if(!silent)msg("Saved to Firebase.","ok");
+    if(!silent){
+      await addDoc(collection(firestore,"dashboards",currentFirebaseUser.uid,"saveLogs"),{
+        savedAt:serverTimestamp(),
+        email:currentFirebaseUser.email||"",
+        action:saveReason,
+        type:"manual-save"
+      });
+    }
+    if(!silent)msg("Saved to Firebase and added to Save History.","ok");
     return true;
   }catch(err){
     console.error("Firebase save failed",err);
@@ -3509,6 +3543,38 @@ window.openFirebaseLogin = function(){
   gate?.classList.add("open");
 };
 
+window.loadSaveHistory = async function(){
+  const el=document.getElementById("saveHistoryList");
+  if(!el)return;
+  if(!isConfigured || !firestore || !currentFirebaseUser){
+    el.innerHTML='<div class="save-history-empty">Sign in to view your Firebase save history.</div>';
+    return;
+  }
+  el.innerHTML='<div class="save-history-empty">Loading save history…</div>';
+  try{
+    const ref=collection(firestore,"dashboards",currentFirebaseUser.uid,"saveLogs");
+    const snap=await getDocs(query(ref,orderBy("savedAt","desc"),limit(50)));
+    if(snap.empty){
+      el.innerHTML='<div class="save-history-empty">No manual saves have been logged yet.</div>';
+      return;
+    }
+    el.innerHTML=snap.docs.map(d=>{
+      const v=d.data()||{};
+      const dt=v.savedAt?.toDate ? v.savedAt.toDate() : null;
+      const when=dt ? dt.toLocaleString(undefined,{dateStyle:"medium",timeStyle:"medium"}) : "Saving time pending…";
+      const action=esc(v.action||"Manual Save");
+      const email=esc(v.email||currentFirebaseUser.email||"");
+      return '<div class="save-history-row">'+
+        '<div class="save-history-main"><strong>'+action+'</strong><span>'+email+' · Firebase Cloud Firestore</span></div>'+
+        '<div class="save-history-time">'+esc(when)+'</div>'+
+      '</div>';
+    }).join("");
+  }catch(err){
+    console.error("Save history load failed",err);
+    el.innerHTML='<div class="save-history-empty">Could not load save history. Check your Firestore Security Rules.</div>';
+  }
+};
+
 if(isConfigured){
   try{
     const app=initializeApp(cfg);
@@ -3528,14 +3594,17 @@ if(isConfigured){
 }
 
 // Replace the existing Save Data action with local + Firebase saving.
-const originalSaveData = window.saveData;
 window.saveData = async function(silent=false){
-  try{ if(typeof originalSaveData === "function") originalSaveData(true); }catch(e){ console.warn(e); }
+  try{
+    localStorage.setItem("relationshipDashboardData",JSON.stringify(db));
+  }catch(e){
+    console.warn("Local save failed",e);
+  }
   if(!isConfigured || !currentFirebaseUser){
     if(!silent && typeof msg === "function") msg(isConfigured?"Saved locally. Sign in to save online.":"Saved locally. Firebase setup is still required for cloud saving.","ok");
     return;
   }
-  await window.firebaseCloudSave(silent);
+  await window.firebaseCloudSave(silent, silent ? "Background Save" : "Manual Save");
 };
 </script>
 
