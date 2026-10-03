@@ -3448,7 +3448,13 @@ async function loadCloud(user){
       msg("Signed in. No cloud dashboard has been saved for this account yet.","ok");
       return;
     }
-    const remote=snap.data()?.dashboard;
+    const record=snap.data()||{};
+    let remote=record.dashboardJson;
+    if(typeof remote==="string"){
+      try{ remote=JSON.parse(remote); }catch(parseErr){ remote=null; }
+    }else{
+      remote=record.dashboard;
+    }
     const looksValid=typeof hasUsableDashboardData==="function" && hasUsableDashboardData(remote);
     if(looksValid){
       db=remote;
@@ -3472,10 +3478,11 @@ window.firebaseCloudSave = async function(silent=false, saveReason="Manual Save"
     return false;
   }
   try{
-    const payload=JSON.parse(JSON.stringify(db));
-    // Keep account-specific data in one user-owned document.
+    const dashboardJson=JSON.stringify(db);
+    // Store the dashboard as a JSON string so nested arrays / complex structures
+    // are preserved without Firestore rejecting unsupported nested array values.
     await setDoc(doc(firestore,"dashboards",currentFirebaseUser.uid),{
-      dashboard:payload,
+      dashboardJson,
       updatedAt:serverTimestamp(),
       ownerUid:currentFirebaseUser.uid
     },{merge:true});
