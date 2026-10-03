@@ -2574,7 +2574,7 @@ function renderWeightageSettings(){
     '<div class="tool-settings-head">'+
       '<div><div class="tool-settings-kicker">TOOLS / WEIGHTAGE</div><h2 class="tool-settings-title">Weightage Settings</h2>'+
       '<p class="tool-settings-sub">Change the importance of each relationship element from 1 to 10. The value is synchronized to the Score Matrix automatically.</p></div>'+
-      '<div class="tool-settings-actions"><button onclick="activeTab=\\'Tools\\';render()">Back to Tools</button><button class="primary" onclick="applyAllWeightages()">Save Weightage</button></div>'+
+      '<div class="tool-settings-actions"><button onclick="activeTab=\'Tools\';render()">Back to Tools</button><button class="primary" onclick="applyAllWeightages()">Save Weightage</button></div>'+
     '</div>'+
     '<div class="tool-stat-grid">'+
       '<div class="tool-stat"><div class="label">Elements</div><div class="value">'+cats.length+'</div></div>'+
@@ -2629,7 +2629,7 @@ function renderElementSettings(){
     '<div class="tool-settings-head">'+
       '<div><div class="tool-settings-kicker">TOOLS / ELEMENTS</div><h2 class="tool-settings-title">Element Settings</h2>'+
       '<p class="tool-settings-sub">Rename relationship elements, change their description and weightage, add new elements, or remove old ones.</p></div>'+
-      '<div class="tool-settings-actions"><button onclick="activeTab=\\'Tools\\';render()">Back to Tools</button><button onclick="addRelationshipElement()">＋ Add Element</button><button class="primary" onclick="saveElementSettings()">Save Elements</button></div>'+
+      '<div class="tool-settings-actions"><button onclick="activeTab=\'Tools\';render()">Back to Tools</button><button onclick="addRelationshipElement()">＋ Add Element</button><button class="primary" onclick="saveElementSettings()">Save Elements</button></div>'+
     '</div>'+
     '<div class="tool-stat-grid">'+
       '<div class="tool-stat"><div class="label">Elements</div><div class="value">'+cats.length+'</div></div>'+
@@ -2710,10 +2710,10 @@ function toolsPage(){
       '<p class="tool-settings-sub">Manage the calculation setup without editing the raw data tables.</p></div>'+
     '</div>'+
     '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">'+
-      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\\'Weightage Settings\\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚖ Weightage Settings</strong><span class="small">Set the importance of each relationship element from 1–10.</span></button>'+
-      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\\'Element Settings\\';openMenu=null;render()"><strong style="display:block;font-size:15px">✎ Element Settings</strong><span class="small">Rename, add, delete and describe relationship elements.</span></button>'+
-      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\\'Spider Chart Data\\';openMenu=null;render()"><strong style="display:block;font-size:15px">◌ Spider Chart Data</strong><span class="small">Edit the dedicated spider chart values.</span></button>'+
-      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\\'Dashboard Setup\\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚙ Dashboard Setup</strong><span class="small">Review the dashboard modules and planned analysis.</span></button>'+
+      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Weightage Settings\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚖ Weightage Settings</strong><span class="small">Set the importance of each relationship element from 1–10.</span></button>'+
+      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Element Settings\';openMenu=null;render()"><strong style="display:block;font-size:15px">✎ Element Settings</strong><span class="small">Rename, add, delete and describe relationship elements.</span></button>'+
+      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Spider Chart Data\';openMenu=null;render()"><strong style="display:block;font-size:15px">◌ Spider Chart Data</strong><span class="small">Edit the dedicated spider chart values.</span></button>'+
+      '<button style="text-align:left;padding:18px;border-radius:18px" onclick="activeTab=\'Dashboard Setup\';openMenu=null;render()"><strong style="display:block;font-size:15px">⚙ Dashboard Setup</strong><span class="small">Review the dashboard modules and planned analysis.</span></button>'+
     '</div>'+
   '</div>';
 }
