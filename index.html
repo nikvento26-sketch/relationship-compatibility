@@ -721,9 +721,45 @@ td input:focus,td select:focus,td textarea:focus{
 .compare-dataset-legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:9px;color:var(--secondary);font-size:12px}
 .compare-dataset-legend span{display:inline-flex;align-items:center;gap:6px}
 .compare-dataset-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.profile-analytics-grid{align-items:stretch}.profile-radar-box,.profile-bar-box{padding:8px 8px 2px}.profile-switcher select{min-width:260px}.multi-compare-chart .compare-dataset-legend{position:relative;z-index:2}.compare-dataset-legend{border-top:1px solid rgba(0,0,0,.05);padding-top:9px}..interactive-tip{font-size:11px;color:var(--secondary);margin-top:7px}
+.profile-analytics-grid{align-items:stretch}.profile-radar-box,.profile-bar-box{padding:8px 8px 2px}.profile-switcher select{min-width:260px}.multi-compare-chart .compare-dataset-legend{position:relative;z-index:2}.compare-dataset-legend{border-top:1px solid rgba(0,0,0,.05);padding-top:9px}.interactive-tip{font-size:11px;color:var(--secondary);margin-top:7px}
 @media(max-width:900px){.profile-analytics-grid{grid-template-columns:1fr}.multi-compare-grid{grid-template-columns:1fr}.profile-switcher{grid-template-columns:1fr}}
 @media(max-width:520px){.profile-metric-grid{grid-template-columns:1fr 1fr 1fr;gap:7px}.auth-card{padding:22px}.multi-compare-chart{height:400px}}
+
+
+/* Minimal, responsive navigation */
+#nav{display:grid;gap:6px;margin:8px 0 24px;padding:5px;border:1px solid rgba(0,0,0,.06);border-radius:16px;background:rgba(255,255,255,.62);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:var(--shadow-soft)}
+.nav-group{display:flex;align-items:center;gap:5px;min-width:0}
+.nav-group-label{flex:0 0 auto;padding:6px 8px;color:var(--tertiary);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.nav-group-scroll{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.nav-group-scroll::-webkit-scrollbar{display:none}
+.nav-item{border:0!important;box-shadow:none!important;background:transparent!important;padding:8px 11px!important;border-radius:9px!important;color:var(--secondary)!important;font-size:12px!important;white-space:nowrap;transform:none!important}
+.nav-item:hover{background:rgba(0,0,0,.045)!important;color:var(--text)!important}
+.nav-item.active{background:#fff!important;color:var(--text)!important;font-weight:650!important;box-shadow:0 2px 8px rgba(0,0,0,.06)!important}
+.report-modal{position:fixed;inset:0;z-index:11000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(245,245,247,.78);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
+.report-modal.open{display:flex}
+.report-card{width:min(520px,100%);background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.96);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.16);padding:22px}
+.report-card h3{margin:0 0 5px;font-size:22px;letter-spacing:-.03em}
+.report-options{display:grid;gap:8px;margin:16px 0}
+.report-option{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid rgba(0,0,0,.07);border-radius:14px;background:#fff;cursor:pointer}
+.report-option:hover{background:#f8f8fa}
+.report-option input{margin-top:3px}
+.report-option strong{display:block;font-size:13px}.report-option span{display:block;color:var(--secondary);font-size:11px;margin-top:2px}
+.report-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px}
+.dashboard-spider-toolbar{display:flex;align-items:end;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px}
+.dashboard-spider-toolbar select{min-width:220px;padding:10px 12px;border:1px solid rgba(0,0,0,.08);border-radius:12px;background:#fff;font:600 13px inherit;color:var(--text)}
+@media(max-width:700px){
+  #nav{padding:4px;border-radius:14px}
+  .nav-group{display:block}
+  .nav-group-label{padding:5px 7px 3px}
+  .nav-group-scroll{padding-bottom:1px}
+  .nav-item{padding:8px 10px!important;font-size:11px!important}
+  .container{padding:20px 12px 45px}
+  .auth-bar{border-radius:13px}
+  .actions{gap:7px}
+  .actions button{flex:1 1 auto}
+  .dashboard-spider-toolbar{display:grid;grid-template-columns:1fr}
+  .dashboard-spider-toolbar select{width:100%}
+}
 
 </style>
 
@@ -739,7 +775,7 @@ td input:focus,td select:focus,td textarea:focus{
   </div>
   <div class="actions">
     <button class="primary" onclick="saveData()">Save Data</button>
-    <button class="green" onclick="generateReport()">📄 Generate Report</button>
+    <button class="green" onclick="openReportOptions()">📄 Generate Report</button>
 
   </div>
 </header>
@@ -755,6 +791,18 @@ td input:focus,td select:focus,td textarea:focus{
         <button onclick="firebaseRegister()">Create Account</button>
       </div>
       <div id="firebaseAuthMessage" class="auth-message"></div>
+    </div>
+  </div>
+</div>
+
+<div id="reportOptionsModal" class="report-modal" onclick="if(event.target===this)closeReportOptions()">
+  <div class="report-card">
+    <h3>Generate report</h3>
+    <div class="section-note" style="margin-bottom:0">Choose which profile data to include in the printable report.</div>
+    <div id="reportOptionsList" class="report-options"></div>
+    <div class="report-actions">
+      <button onclick="closeReportOptions()">Cancel</button>
+      <button class="primary" onclick="confirmReportGeneration()">Generate</button>
     </div>
   </div>
 </div>
@@ -949,8 +997,7 @@ function profileCard(row,index){
       </div>
     </div>
   </article>`;
-}
-function profilesPage(){
+}function profilesPage(){
   const rows=profileRows();
   return `<div class="card">
     <div class="profile-toolbar">
@@ -997,7 +1044,8 @@ function compareValues(){
 function compareMini(row){
   const name=String(row?.[1]??"").trim();
   const photo=profilePhoto(name);
-  const avatar=photo?`<img class="compare-mini-avatar" src="${esc(photo)}" alt="${esc(name)}">`:`<div class="compare-mini-avatar compare-mini-placeholder">${esc(profileInitials(name))}</div>`;  return `<div class="mini">${avatar}<div><b>${esc(name||"Not selected")}</b><div class="small">${esc(String(row?.[4]??""))}</div></div></div>`;
+  const avatar=photo?`<img class="compare-mini-avatar" src="${esc(photo)}" alt="${esc(name)}">`:`<div class="compare-mini-avatar compare-mini-placeholder">${esc(profileInitials(name))}</div>`;
+  return `<div class="mini">${avatar}<div><b>${esc(name||"Not selected")}</b><div class="small">${esc(String(row?.[4]??""))}</div></div></div>`;
 }
 
 function compareRadarSVG(values){
@@ -1215,46 +1263,51 @@ function comparisonPage(){
 
 function dashboard(){
   const rows=scores();
-  const spider=db["Spider Chart Data"]?.rows || [];
-  const chartA=spider.map(r=>valNum(r[1])).filter(x=>x!==null);
-  const chartP=spider.map(r=>valNum(r[2])).filter(x=>x!==null);
-  const alya=rows.map(r=>valNum(r[8])).filter(x=>x!==null);
-  const puteri=rows.map(r=>valNum(r[9])).filter(x=>x!==null);
-  const alyaScore=chartA.length?avg(chartA):avg(alya);
-  const puteriScore=chartP.length?avg(chartP):avg(puteri);
   const gaps=rows.map(r=>({name:r[0],gap:valNum(r[6]),importance:valNum(r[1])})).filter(x=>x.gap!==null);
-  const scenario=db["Scenario Study"].rows.map(r=>({name:r[0]+" "+r[1],a:valNum(r[3]),p:valNum(r[4])})).filter(x=>x.a!==null||x.p!==null);
+  const scenario=db["Scenario Study"]?.rows||[];
   const profileCount=db.Profiles.rows.length, catCount=db.Categories.rows.length;
-  return `<div class="notice">Use the tabs to enter or edit data. <b>Save Data</b> stores your changes in this browser; <b>Generate Report</b> creates a print-ready report from the current data.</div>
+  const names=profileNamesEnhanced();
+  if(!dashboardProfileName||!names.includes(dashboardProfileName)) dashboardProfileName=names[0]||"";
+  const selectedValues=dashboardProfileName?profileSpiderData(dashboardProfileName).map(x=>x.value).filter(v=>v!==null):[];
+  const selectedScenario=dashboardProfileName?profileScenarioData(dashboardProfileName).map(x=>x.value).filter(v=>v!==null):[];
+  const selectedAvg=selectedValues.length?avg(selectedValues):null;
+  const selectedScenarioAvg=selectedScenario.length?avg(selectedScenario):null;
+  const options=names.map(n=>`<option value="${esc(n)}" ${n===dashboardProfileName?"selected":""}>${esc(n)}</option>`).join("");
+  const scenarioPreview=scenario.map(r=>({name:r[0]+" "+r[1],a:valNum(r[3]),p:valNum(r[4])})).filter(x=>x.a!==null||x.p!==null);
+  return `<div class="notice">Choose a profile in the Spiderweb selector to view <b>only that person's</b> profile scores. Use <b>Comparison</b> when you want 2 or 3 people together.</div>
   <div class="grid">
     <div class="card kpi"><div class="label">Profiles</div><div class="value">${profileCount}</div><div class="hint">People currently in the study</div></div>
     <div class="card kpi"><div class="label">Categories</div><div class="value">${catCount}</div><div class="hint">Relationship dimensions</div></div>
-    <div class="card kpi"><div class="label">Alya weighted score</div><div class="value">${alyaScore===null?"—":alyaScore.toFixed(1)+"/10"}</div><div class="hint">Calculated from completed score pairs</div></div>
-    <div class="card kpi"><div class="label">Puteri weighted score</div><div class="value">${puteriScore===null?"—":puteriScore.toFixed(1)+"/10"}</div><div class="hint">Calculated from completed score pairs</div></div>
+    <div class="card kpi"><div class="label">${esc(dashboardProfileName||"Selected profile")} average</div><div class="value">${selectedAvg===null?"—":selectedAvg.toFixed(1)+"/10"}</div><div class="hint">Single-profile compatibility view</div></div>
+    <div class="card kpi"><div class="label">Scenario average</div><div class="value">${selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1)+"/10"}</div><div class="hint">Selected profile only</div></div>
   </div>
   <div class="grid2" style="margin-top:14px">
-    <div class="card chart-card"><h2>Spiderweb</h2><div class="section-note">Alya vs Puteri • 0–10 scale</div><div id="radarChart" class="chart-stage">
-      <div style="display:flex;justify-content:center;gap:18px;margin-top:8px;font-size:12px;color:#6e6e73">
-        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#0071e3;margin-right:6px"></span>Alya</span>
-        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#af52de;margin-right:6px"></span>Puteri</span>
-      </div></div></div>
-    <div class="card chart-card"><h2>Category Comparison</h2><div class="section-note">Alya vs Puteri • 0–10 scale</div><div id="barChart" class="chart-stage"></div></div>
+    <div class="card chart-card">
+      <div class="dashboard-spider-toolbar">
+        <div><h2 style="margin-bottom:3px">Spiderweb</h2><div class="section-note" style="margin:0">One profile at a time • 0–10 scale</div></div>
+        <select onchange="dashboardProfileName=this.value;render()" aria-label="Select profile for spiderweb">${options}</select>
+      </div>
+      <div id="radarChart" class="chart-stage">${dashboardProfileName?svgSingleProfileRadar(dashboardProfileName):`<div class='empty' style='padding:50px;text-align:center'>Add a profile to view the spiderweb.</div>`}</div>
+    </div>
+    <div class="card chart-card"><h2>Selected Profile Scenarios</h2><div class="section-note">Only ${esc(dashboardProfileName||"the selected profile")} is shown</div><div id="barChart" class="chart-stage">${dashboardProfileName?svgSingleProfileBars(dashboardProfileName):`<div class='empty' style='padding:50px;text-align:center'>Add a profile to view scenario scores.</div>`}</div></div>
   </div>
   <div class="grid2" style="margin-top:14px">
     <div class="card"><h2>Gap Analysis</h2>${gaps.length?`<div class="list">${gaps.map(x=>`<div class="listrow"><span>${esc(x.name)} <small>(gap ${x.gap.toFixed(1)})</small></span><div class="bar"><i style="width:${Math.min(100,x.gap*10)}%"></i></div></div>`).join("")}</div>`:`<div class="empty">Enter self and partner scores in Score Matrix to populate this analysis.</div>`}</div>
-    <div class="card"><h2>Scenario Study</h2>${scenario.length?`<div class="list">${scenario.map(x=>`<div class="listrow"><span>${esc(x.name)}</span><span>${x.a??"—"} / ${x.p??"—"}</span></div>`).join("")}</div>`:`<div class="empty">Add scenario scores to see the comparison.</div>`}</div>
+    <div class="card"><h2>Scenario Study</h2>${scenarioPreview.length?`<div class="list">${scenarioPreview.slice(0,5).map(x=>`<div class="listrow"><span>${esc(x.name)}</span><span>${x.a??"—"} / ${x.p??"—"}</span></div>`).join("")}</div>`:`<div class="empty">Add scenario scores to see the comparison.</div>`}</div>
   </div>
   <div class="card" style="margin-top:14px"><h2>Automatic Analytics</h2><div id="analyticsText" class="empty">Calculating analysis…</div></div>
-  <div class="card" style="margin-top:14px">
-    <h2>Compare Profiles</h2>
-    <p style="font-size:13px;color:#6e6e73;margin-top:0">Choose any two people and review their profile details and score differences side by side.</p>
-    <button class="primary" onclick="activeTab='Comparison';render()">Open Comparison</button>
-  </div>
-  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. You can enter it directly in the corresponding table. Use <b>＋ Add Data</b> for new rows and <b>Delete</b> for rows you no longer need.</p></div>`;
+  <div class="card" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h2 style="margin-bottom:3px">Compare Profiles</h2><p style="font-size:13px;color:#6e6e73;margin:0">Compare 2 or 3 people with their own chart lines and legend.</p></div><button class="primary" onclick="activeTab='Comparison';render()">Open Comparison</button></div></div>
+  <div class="card" style="margin-top:14px"><h2>Data Entry</h2><p style="font-size:12px;color:#667085;margin-top:0">Every blank value from your workbook remains blank. Edit data from the relevant tab.</p></div>`;
 }
+
 function render(){
   ensureProfileColumnsForAll();
-  document.getElementById("nav").innerHTML=tabs.map(t=>`<button class="${activeTab===t?"active":""}" onclick="activeTab='${t}';render()">${t}</button>`).join("");
+  const navGroups=[
+  {label:"Overview",items:["Dashboard","Profiles","Profile View","Comparison"]},
+  {label:"Data",items:["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"]},
+  {label:"Tools",items:["Spider Chart Data","Dashboard Setup"]}
+];
+document.getElementById("nav").innerHTML=navGroups.map(g=>`<div class="nav-group"><div class="nav-group-label">${g.label}</div><div class="nav-group-scroll">${g.items.map(t=>`<button class="nav-item ${activeTab===t?"active":""}" onclick="activeTab='${t}';render()">${t}</button>`).join("")}</div></div>`).join("");
   let content="";
   if(activeTab==="Dashboard") content=dashboard();
   else if(activeTab==="Profiles") content=profilesPage();
@@ -1262,25 +1315,64 @@ function render(){
   else if(activeTab==="Comparison") content=comparisonPage();
   else content=`<div class="card"><div class="toolbar"><div><h2 style="margin:0">${activeTab}</h2><div class="muted">${activeTab==="Score Matrix"?"Calculated Gap and Weighted columns update automatically.":""}</div></div></div>${renderTable(activeTab)}</div>`;
   document.getElementById("app").innerHTML=content;
-  if(activeTab==="Dashboard") setTimeout(drawCharts,0);
+  if(activeTab==="Dashboard") setTimeout(drawDashboardAnalytics,0);
 }
-function reportHTML(){
-  const rows=scores(), alya=avg(rows.map(r=>valNum(r[8])).filter(x=>x!==null)), puteri=avg(rows.map(r=>valNum(r[9])).filter(x=>x!==null));
-  const profiles=db.Profiles.rows.filter(r=>r[1]).map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("");
-  const scoreRows=rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]??""}</td><td>${r[6]??""}</td><td>${r[7]??""}</td><td>${r[8]??""}</td><td>${r[9]??""}</td></tr>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Relationship Compatibility Report</title><style>
-  body{font-family:Arial,sans-serif;color:#172033;padding:35px}h1{margin-bottom:4px}h2{margin-top:28px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f1f3f7}.k{display:inline-block;width:30%;padding:12px;border:1px solid #ddd;margin:4px;border-radius:8px}.muted{color:#667085}@media print{body{padding:15px}}</style></head><body>
-  <h1>Relationship Compatibility Study Report</h1><div class="muted">Generated ${new Date().toLocaleString()}</div>
-  <div><div class="k"><b>Alya</b><br>${alya===null?"Not enough completed scores":alya.toFixed(1)+"/10"}</div><div class="k"><b>Puteri</b><br>${puteri===null?"Not enough completed scores":puteri.toFixed(1)+"/10"}</div></div>
-  <h2>Profiles</h2><table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profiles}</table>
-  <h2>Score Matrix</h2><table><tr><th>Category</th><th>Importance</th><th>Alya Gap</th><th>Puteri Gap</th><th>Alya Weighted</th><th>Puteri Weighted</th></tr>${scoreRows}</table>
-  <p class="muted">This report is a descriptive data summary. Blank fields remain blank and calculated values depend on completed inputs.</p>
-  <script>window.onload=()=>window.print();<\/script></body></html>`;
+
+function drawDashboardAnalytics(){
+  if(activeTab!=="Dashboard") return;
+  const at=document.getElementById("analyticsText");
+  if(!at)return;
+  const names=profileNamesEnhanced();
+  const name=dashboardProfileName&&names.includes(dashboardProfileName)?dashboardProfileName:names[0];
+  if(!name){at.innerHTML="<div class='empty'>Add a profile to generate analytics.</div>";return;}
+  const data=profileSpiderData(name).filter(x=>x.value!==null);
+  if(!data.length){at.innerHTML=`<div class='empty'>No score data is available for ${esc(name)} yet.</div>`;return;}
+  const ranked=[...data].sort((a,b)=>b.value-a.value);
+  const strengths=ranked.slice(0,3);
+  const gaps=ranked.length>1?[...ranked].sort((a,b)=>a.value-b.value).slice(0,3):[];
+  at.innerHTML=`<div class="analytics"><div class="insight"><div class="title">Selected profile</div><div class="text">${esc(name)}</div></div><div class="insight"><div class="title">Top strengths</div><div class="text">${strengths.map(x=>esc(x.name)+" ("+x.value+")").join(" · ")}</div></div><div class="insight"><div class="title">Focus areas</div><div class="text">${gaps.map(x=>esc(x.name)+" ("+x.value+")").join(" · ")}</div></div></div>`;
 }
-function generateReport(){
+
+function reportHTML(scope="all"){
+  const names=profileNamesEnhanced();
+  const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
+  const rows=scores();
+  const profiles=selected.map(name=>profileByName(name)).filter(Boolean);
+  const spiderRows=db["Spider Chart Data"]?.rows||[];
+  const scoreHeaders=selected.map(n=>n);
+  const scoreTableRows=spiderRows.map(r=>{
+    const cat=String(r?.[0]||"");
+    const cells=selected.map(name=>{const idx=findHeaderIndex(db["Spider Chart Data"]?.headers||[],name);const v=idx>=0?valNum(r?.[idx]):null;return `<td>${v===null?"":v}</td>`}).join("");
+    return `<tr><td>${esc(cat)}</td>${cells}</tr>`;
+  }).join("");
+  const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
+  const scopeLabel=scope==="all"?"All profiles":scope;
+  const headerCells=scoreHeaders.map(n=>`<th>${esc(n)}</th>`).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Relationship Compatibility Report</title><style>body{font-family:Arial,sans-serif;color:#172033;padding:35px}h1{margin-bottom:4px}h2{margin-top:28px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f1f3f7}.scope{display:inline-block;padding:5px 9px;background:#f1f3f7;border-radius:999px;font-size:11px}.muted{color:#667085}@media print{body{padding:15px}}</style></head><body>
+<h1>Relationship Compatibility Study Report</h1><div class="muted">Scope: <span class="scope">${esc(scopeLabel)}</span></div><div class="muted">Generated ${new Date().toLocaleString()}</div>
+<h2>Profiles</h2><table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profileTable}</table>
+<h2>Spider Chart Data</h2><table><tr><th>Category</th>${headerCells}</tr>${scoreTableRows}</table>
+<h2>Scenario Study</h2><table><tr><th>Scenario</th>${selected.map(n=>`<th>${esc(n)}</th>`).join("")}</tr>${(db["Scenario Study"]?.rows||[]).map(r=>{const cells=selected.map(name=>{const idx=findHeaderIndex(db["Scenario Study"]?.headers||[],name+" Response Score (1-10)"),v=idx>=0?valNum(r?.[idx]):null;return `<td>${v===null?"":v}</td>`}).join("");return `<tr><td>${esc(r?.[1]||r?.[0]||"")}</td>${cells}</tr>`}).join("")}</table>
+<p class="muted">This report is a descriptive data summary. Blank fields remain blank.</p><script>window.onload=()=>window.print();<\/script></body></html>`;
+}
+function openReportOptions(){
+  const list=document.getElementById("reportOptionsList");
+  if(!list)return;
+  const names=profileNamesEnhanced();
+  const options=[`<label class="report-option"><input type="radio" name="reportScope" value="all" checked><div><strong>All profiles</strong><span>Generate one report containing everyone currently in the dashboard.</span></div></label>`].concat(names.map(n=>`<label class="report-option"><input type="radio" name="reportScope" value="${esc(n)}"><div><strong>${esc(n)} only</strong><span>Generate the report for ${esc(n)} without the other profiles.</span></div></label>`));
+  list.innerHTML=options.join("");
+  document.getElementById("reportOptionsModal")?.classList.add("open");
+}
+function closeReportOptions(){document.getElementById("reportOptionsModal")?.classList.remove("open");}
+function confirmReportGeneration(){
+  const choice=document.querySelector('input[name="reportScope"]:checked')?.value||"all";
+  closeReportOptions();
   const w=window.open("","_blank");
   if(!w){alert("Please allow pop-ups for this dashboard.");return;}
-  w.document.write(reportHTML());w.document.close();
+  w.document.write(reportHTML(choice));w.document.close();
+}
+function generateReport(scope="all"){
+  if(scope) { const w=window.open("","_blank"); if(!w){alert("Please allow pop-ups for this dashboard.");return;} w.document.write(reportHTML(scope)); w.document.close(); }
 }
 
 
@@ -1416,6 +1508,7 @@ function drawCharts(){
 
 /* ===== Enhanced profile + comparison analytics ===== */
 let selectedProfileName = null;
+let dashboardProfileName = null;
 let comparePeople = [];
 
 function profileNamesEnhanced(){
@@ -1634,12 +1727,11 @@ function comparisonPage(){
   </div>`;
 }
 
-tabs.splice(0,tabs.length,"Dashboard","Profiles","Profile View","Comparison","Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance","Spider Chart Data","Dashboard Setup");
 ensureProfileColumnsForAll();
 
 
 render();
-setTimeout(drawCharts,80);
+setTimeout(drawDashboardAnalytics,80);
 </script>
 <script>
 // ===== Firebase configuration =====
