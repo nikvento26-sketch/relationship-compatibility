@@ -1621,6 +1621,80 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
   .site-toplinks button,.site-toplinks .toplink{padding:6px 8px!important;font-size:9px!important}
 }
 .compare-legend-prominent{margin:10px 0 2px;padding:7px 10px;border:1px solid rgba(0,0,0,.06);border-radius:10px;background:#fff;gap:18px;font-size:12px}.compare-legend-prominent i{width:10px;height:10px;display:inline-block;border-radius:50%}.compare-chart-card>.compare-legend-prominent{background:rgba(248,248,250,.8);border-top:0}
+
+/* ===== Data Manager ===== */
+.data-manager-modal{
+  position:fixed;inset:0;z-index:12000;display:none;
+  align-items:center;justify-content:center;padding:18px;
+  background:rgba(15,23,42,.42);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+}
+.data-manager-modal.open{display:flex}
+.data-manager-card{
+  width:min(1180px,100%);height:min(760px,calc(100vh - 36px));
+  display:flex;flex-direction:column;min-height:0;
+  background:rgba(255,255,255,.97);
+  border:1px solid rgba(255,255,255,.95);
+  border-radius:22px;
+  box-shadow:0 28px 90px rgba(0,0,0,.20);
+  overflow:hidden;
+}
+.data-manager-head{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:18px 20px;border-bottom:1px solid rgba(0,0,0,.07);
+  background:linear-gradient(180deg,#fff,#f8fbff);
+}
+.data-manager-kicker{
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0878d1;
+}
+.data-manager-title{margin:3px 0 2px;font-size:20px;letter-spacing:-.03em}
+.data-manager-sub{margin:0;color:#667085;font-size:11px}
+.data-manager-body{
+  display:grid;grid-template-columns:225px minmax(0,1fr);
+  flex:1;min-height:0;
+}
+.data-manager-sidebar{
+  padding:12px;border-right:1px solid rgba(0,0,0,.07);
+  background:#f8fafc;overflow:auto;
+}
+.data-manager-sheet{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-bottom:6px;padding:10px 11px;
+  border:1px solid transparent;border-radius:11px;
+  background:transparent;color:#475467;text-align:left;
+  box-shadow:none;font-size:11px;font-weight:650;
+}
+.data-manager-sheet:hover{background:#fff;border-color:rgba(8,120,209,.10);color:#0878d1;transform:none}
+.data-manager-sheet.active{background:#eaf6ff;color:#0878d1;border-color:rgba(8,120,209,.15)}
+.data-manager-sheet .count{
+  min-width:22px;padding:2px 6px;border-radius:999px;
+  background:rgba(0,0,0,.05);font-size:9px;color:#667085;text-align:center;
+}
+.data-manager-sheet.active .count{background:#fff;color:#0878d1}
+.data-manager-content{min-width:0;min-height:0;padding:18px;overflow:auto}
+.data-manager-content .tablewrap,.data-manager-content .table-wrap{
+  max-height:calc(100vh - 205px);overflow:auto;
+}
+.data-manager-content .toolbar{
+  position:sticky;top:0;z-index:3;
+  padding:8px 10px;margin-bottom:10px;border-radius:11px;
+  background:rgba(248,250,252,.95);border:1px solid rgba(0,0,0,.05);
+}
+.data-manager-content h2{margin:0 0 2px;font-size:18px}
+.data-manager-tip{margin:0 0 12px;color:#667085;font-size:11px}
+@media(max-width:760px){
+  .data-manager-modal{padding:8px}
+  .data-manager-card{height:calc(100vh - 16px);border-radius:16px}
+  .data-manager-body{grid-template-columns:1fr}
+  .data-manager-sidebar{
+    display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid rgba(0,0,0,.07);
+    padding:8px;
+  }
+  .data-manager-sheet{width:auto;min-width:max-content;margin:0;padding:8px 10px}
+  .data-manager-content{padding:12px}
+  .data-manager-content .tablewrap,.data-manager-content .table-wrap{max-height:calc(100vh - 250px)}
+}
+
 </style>
 
 
@@ -1683,6 +1757,24 @@ header h1{font-size:32px;margin-bottom:4px}.subtitle{font-size:14px}.actions{mar
     </div>
   </div>
 </div>
+
+<div id="dataManagerModal" class="data-manager-modal" onclick="if(event.target===this)closeDataManager()">
+  <div class="data-manager-card" role="dialog" aria-modal="true" aria-labelledby="dataManagerTitle">
+    <div class="data-manager-head">
+      <div>
+        <div class="data-manager-kicker">DATA WORKSPACE</div>
+        <h2 id="dataManagerTitle" class="data-manager-title">Manage your data</h2>
+        <p class="data-manager-sub">Edit existing values or add new rows without leaving the dashboard.</p>
+      </div>
+      <button class="small" onclick="closeDataManager()">Close</button>
+    </div>
+    <div class="data-manager-body">
+      <aside id="dataManagerSheets" class="data-manager-sidebar"></aside>
+      <section id="dataManagerContent" class="data-manager-content"></section>
+    </div>
+  </div>
+</div>
+
 <nav id="nav"></nav>
 <main id="app"></main>
 <script>
@@ -2423,7 +2515,7 @@ function render(){
     const dataItems=["Categories","Score Matrix","Scenario Study","Monthly Trend","Future & Finance"];
     const toolItems=["Spider Chart Data","Dashboard Setup"];
     const makeMenu=(key,label,items)=>'<div class="menu-wrap"><button class="menu-trigger '+(items.includes(activeTab)||openMenu===key?'active':'')+'" onclick="toggleMenu(\''+key+'\')">'+label+'<span class="menu-chevron">'+(openMenu===key?'▴':'▾')+'</span></button><div class="menu-panel '+(openMenu===key?'visible':'')+'">'+items.map(t=>'<button class="menu-option '+(activeTab===t?'active':'')+'" onclick="selectMenuItem(\''+t+'\')">'+t+'</button>').join('')+'</div></div>';
-    document.getElementById("nav").innerHTML='<div class="subnav-inner"><div class="subnav-label">Workspace</div><div class="subnav-links">'+makeMenu("data","Data",dataItems)+makeMenu("tools","Tools",toolItems)+'<button class="subnav-link" onclick="activeTab=\'Dashboard\';openMenu=null;render()">Quick overview</button></div><div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div></div>';
+    document.getElementById("nav").innerHTML='<div class="subnav-inner"><div class="subnav-label">Workspace</div><div class="subnav-links">'+'<button class="menu-trigger" onclick="openDataManager()">Data <span class="menu-chevron">✎</span></button>'+makeMenu("tools","Tools",toolItems)+'<button class="subnav-link" onclick="activeTab=\'Dashboard\';openMenu=null;render()">Quick overview</button></div><div class="subnav-hint">Choose a profile on Dashboard to focus the charts.</div></div>';
     let content="";
     if(activeTab==="Dashboard") content=dashboard();
     else if(activeTab==="Profiles") content=profilesPage();
@@ -2982,6 +3074,70 @@ function comparisonPage(){
     '</tbody></table></div></div>'+
   '</div>';
 }
+
+
+let dataManagerOpen = false;
+let dataManagerSheet = "Profiles";
+
+function dataManagerSheets(){
+  const base = Array.isArray(editableSheets) ? editableSheets.slice() : [];
+  if(db["Spider Chart Data"] && !base.includes("Spider Chart Data")) base.push("Spider Chart Data");
+  return base;
+}
+function renderDataManager(){
+  const modal=document.getElementById("dataManagerModal");
+  const side=document.getElementById("dataManagerSheets");
+  const main=document.getElementById("dataManagerContent");
+  if(!modal||!side||!main)return;
+  const sheets=dataManagerSheets();
+  if(!sheets.length){
+    main.innerHTML='<div class="empty" style="padding:40px">No editable data sheets are available.</div>';
+    return;
+  }
+  if(!sheets.includes(dataManagerSheet)) dataManagerSheet=sheets[0];
+  side.innerHTML=sheets.map(s=>{
+    const count=Array.isArray(db[s]?.rows)?db[s].rows.length:0;
+    return '<button class="data-manager-sheet '+(dataManagerSheet===s?'active':'')+'" onclick="openDataManagerSheet(\''+esc(s)+'\')">'+
+      '<span>'+esc(s)+'</span><span class="count">'+count+'</span></button>';
+  }).join("");
+  main.innerHTML=
+    '<h2>'+esc(dataManagerSheet)+'</h2>'+
+    '<p class="data-manager-tip">Click a cell to edit it. Use <b>＋ Add Data</b> to create a new row. Changes are saved locally and, when signed in, can also be saved to Firebase.</p>'+
+    renderTable(dataManagerSheet);
+}
+function openDataManager(sheet="Profiles"){
+  dataManagerOpen=true;
+  const sheets=dataManagerSheets();
+  dataManagerSheet=sheets.includes(sheet)?sheet:(sheets[0]||"Profiles");
+  document.getElementById("dataManagerModal")?.classList.add("open");
+  renderDataManager();
+}
+function openDataManagerSheet(sheet){
+  dataManagerSheet=sheet;
+  dataManagerOpen=true;
+  document.getElementById("dataManagerModal")?.classList.add("open");
+  renderDataManager();
+}
+function closeDataManager(){
+  dataManagerOpen=false;
+  document.getElementById("dataManagerModal")?.classList.remove("open");
+}
+const __dataManagerSetCell = window.setCell;
+window.setCell = function(...args){
+  __dataManagerSetCell(...args);
+  if(dataManagerOpen) renderDataManager();
+};
+const __dataManagerAddRow = window.addRow;
+window.addRow = function(sheet){
+  __dataManagerAddRow(sheet);
+  if(sheet==="Profiles" && typeof ensureProfileColumnsForAll==="function") ensureProfileColumnsForAll();
+  if(dataManagerOpen) renderDataManager();
+};
+const __dataManagerDelRow = window.delRow;
+window.delRow = function(sheet,r){
+  __dataManagerDelRow(sheet,r);
+  if(dataManagerOpen) renderDataManager();
+};
 
 ensureProfileColumnsForAll();
 
