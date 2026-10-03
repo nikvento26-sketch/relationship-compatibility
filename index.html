@@ -1204,6 +1204,9 @@ function hasUsableDashboardData(candidate){
   if(!candidate["Spider Chart Data"].rows.length) return false;
   if(!candidate["Scenario Study"].rows.length) return false;
   if(!candidate["Future & Finance"].rows.length) return false;
+  const spiderHasValues=candidate["Spider Chart Data"].rows.some(r=>r.slice(1).some(v=>v!==null&&v!==undefined&&String(v).trim()!==""));
+  const scenarioHasValues=candidate["Scenario Study"].rows.some(r=>r.slice(1).some(v=>v!==null&&v!==undefined&&String(v).trim()!==""));
+  if(!spiderHasValues && !scenarioHasValues) return false;
   return true;
 }
 function cloneInitialData(){
