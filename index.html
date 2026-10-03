@@ -761,22 +761,356 @@ td input:focus,td select:focus,td textarea:focus{
   .dashboard-spider-toolbar select{width:100%}
 }
 
+
+/* ===== Creative blue app shell inspired by modern maker/design platforms ===== */
+body{
+  background:#f5f8fc;
+}
+.site-header{
+  background:linear-gradient(135deg,#0878d1 0%,#0a8be4 55%,#27a9e8 100%);
+  color:#fff;
+  padding:0 26px 14px;
+  margin:0;
+  border:0;
+  box-shadow:0 8px 30px rgba(0,84,160,.18);
+}
+.site-topbar{
+  min-height:78px;
+  display:flex;
+  align-items:center;
+  gap:24px;
+  max-width:1500px;
+  margin:0 auto;
+}
+.site-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:235px;
+}
+.site-logo{
+  width:48px;
+  height:48px;
+  border-radius:8px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  grid-template-rows:repeat(2,1fr);
+  gap:2px;
+  padding:4px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(0,0,0,.15);
+}
+.site-logo span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#0878d1;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  border-radius:2px;
+}
+.site-brand-copy strong{
+  display:block;
+  font-size:18px;
+  line-height:1.05;
+  letter-spacing:-.03em;
+}
+.site-brand-copy span{
+  display:block;
+  margin-top:3px;
+  font-size:12px;
+  font-weight:500;
+  color:rgba(255,255,255,.8);
+}
+.site-toplinks{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex:1;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.site-toplinks::-webkit-scrollbar{display:none}
+.site-toplinks button{
+  border:0!important;
+  background:transparent!important;
+  color:rgba(255,255,255,.92)!important;
+  box-shadow:none!important;
+  padding:10px 14px!important;
+  font-size:14px!important;
+  white-space:nowrap;
+  transform:none!important;
+}
+.site-toplinks button:hover{background:rgba(255,255,255,.10)!important}
+.site-toplinks button.active{background:rgba(0,50,110,.28)!important;color:#fff!important}
+.site-header #authBar{
+  margin:0 0 0 auto;
+  border:0;
+  background:rgba(255,255,255,.10);
+  color:#fff;
+  border-radius:14px;
+  padding:7px 9px;
+  box-shadow:none;
+}
+.site-header .auth-user,
+.site-header .auth-user strong,
+.site-header .auth-status{color:#fff}
+.site-header .auth-status{background:rgba(255,255,255,.10)}
+.site-header .auth-dot{background:rgba(255,255,255,.55)}
+.site-header .auth-dot.online{background:#8df4ad}
+.site-header .auth-actions button{
+  color:#fff!important;
+  background:rgba(255,255,255,.10)!important;
+  border-color:rgba(255,255,255,.28)!important;
+  box-shadow:none!important;
+}
+.site-header .auth-actions button:hover{background:rgba(255,255,255,.18)!important}
+.site-header .actions{margin:8px auto 0;max-width:1500px;justify-content:flex-end}
+.site-header .actions button{
+  border-color:rgba(255,255,255,.28);
+}
+.site-header .actions .primary,
+.site-header .actions .green{
+  background:#fff!important;
+  color:#0769bd!important;
+  border-color:#fff!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.10)!important;
+}
+.site-header h1,.site-header .subtitle{display:none}
+
+#nav{
+  background:linear-gradient(180deg,#0b86df,#0878d1);
+  border:0;
+  border-radius:0;
+  margin:0;
+  padding:0 26px 10px;
+  box-shadow:none;
+}
+#nav .nav-group{
+  max-width:1500px;
+  margin:0 auto;
+}
+#nav .nav-group-label{
+  color:rgba(255,255,255,.62);
+  padding:5px 7px 3px;
+}
+#nav .nav-group-scroll{
+  gap:4px;
+}
+#nav .nav-item{
+  color:rgba(255,255,255,.88)!important;
+}
+#nav .nav-item:hover{
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+}
+#nav .nav-item.active{
+  background:rgba(255,255,255,.16)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+
+.creative-hero{
+  position:relative;
+  overflow:hidden;
+  min-height:360px;
+  margin:0 -24px 22px;
+  padding:58px 34px 52px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 70% 25%,rgba(110,226,255,.38),transparent 25%),
+    radial-gradient(circle at 85% 80%,rgba(66,159,255,.28),transparent 28%),
+    linear-gradient(135deg,#087bd6,#17a3e4 55%,#38bde4);
+  box-shadow:0 18px 50px rgba(2,108,184,.20);
+}
+.creative-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.95),transparent 90%);
+  pointer-events:none;
+}
+.creative-hero:after{
+  content:"";
+  position:absolute;
+  width:300px;
+  height:300px;
+  right:7%;
+  top:18px;
+  border-radius:32px;
+  transform:rotate(24deg) skewX(-8deg);
+  background:linear-gradient(150deg,rgba(255,255,255,.20),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.20);
+  box-shadow:0 25px 70px rgba(0,50,100,.16);
+}
+.hero-inner{
+  position:relative;
+  z-index:2;
+  max-width:1500px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);
+  gap:36px;
+  align-items:center;
+}
+.hero-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.18);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hero-title{
+  margin:15px 0 10px;
+  font-size:clamp(38px,5vw,68px);
+  line-height:.98;
+  letter-spacing:-.055em;
+  font-weight:800;
+  max-width:700px;
+}
+.hero-copy{
+  max-width:620px;
+  color:rgba(255,255,255,.86);
+  font-size:16px;
+  line-height:1.55;
+}
+.hero-controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:24px;
+}
+.hero-select{
+  min-width:220px;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.30);
+  border-radius:12px;
+  background:rgba(255,255,255,.13);
+  color:#fff;
+  font:600 13px inherit;
+  outline:none;
+}
+.hero-select option{color:#1d1d1f}
+.hero-primary{
+  border:0!important;
+  background:#fff!important;
+  color:#0878d1!important;
+  box-shadow:0 10px 25px rgba(0,0,0,.13)!important;
+}
+.hero-preview{
+  position:relative;
+  z-index:2;
+  min-height:240px;
+  padding:22px;
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(18px);
+  box-shadow:0 22px 60px rgba(0,45,95,.20);
+}
+.hero-preview-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  font-size:12px;
+  color:rgba(255,255,255,.76);
+}
+.hero-score{
+  margin-top:22px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.hero-score-card{
+  padding:15px;
+  border-radius:18px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.14);
+}
+.hero-score-card .label{font-size:11px;color:rgba(255,255,255,.68)}
+.hero-score-card .value{font-size:30px;font-weight:800;letter-spacing:-.05em;margin-top:4px}
+.hero-mini-chart{
+  height:70px;
+  margin-top:16px;
+  border-radius:15px;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+  position:relative;
+  overflow:hidden;
+}
+.hero-mini-chart span{
+  position:absolute;
+  bottom:0;
+  width:7%;
+  border-radius:7px 7px 0 0;
+  background:linear-gradient(180deg,#fff,#9ee8ff);
+  opacity:.86;
+}
+.hero-mini-chart span:nth-child(1){left:5%;height:32%}.hero-mini-chart span:nth-child(2){left:15%;height:56%}.hero-mini-chart span:nth-child(3){left:25%;height:44%}.hero-mini-chart span:nth-child(4){left:35%;height:78%}.hero-mini-chart span:nth-child(5){left:45%;height:64%}.hero-mini-chart span:nth-child(6){left:55%;height:92%}.hero-mini-chart span:nth-child(7){left:65%;height:68%}.hero-mini-chart span:nth-child(8){left:75%;height:83%}.hero-mini-chart span:nth-child(9){left:85%;height:51%}
+
+@media(max-width:950px){
+  .site-topbar{gap:12px;flex-wrap:wrap;padding:10px 0}
+  .site-brand{min-width:auto}
+  .site-toplinks{order:3;flex-basis:100%}
+  .site-header #authBar{margin-left:auto}
+  .hero-inner{grid-template-columns:1fr}
+  .creative-hero:after{right:-80px;top:120px}
+  .hero-preview{max-width:620px}
+}
+@media(max-width:700px){
+  .site-header{padding:0 12px 10px}
+  .site-topbar{min-height:auto}
+  .site-brand-copy strong{font-size:15px}
+  .site-logo{width:42px;height:42px}
+  .site-header #authBar{width:100%;margin:0}
+  .site-header .actions{width:100%}
+  .site-header .actions button{flex:1 1 0}
+  #nav{padding:0 12px 9px}
+  .creative-hero{margin:0 -12px 16px;padding:38px 18px 34px;min-height:auto}
+  .hero-title{font-size:42px}
+  .hero-copy{font-size:14px}
+  .hero-select{min-width:0;width:100%}
+  .hero-controls{display:grid;grid-template-columns:1fr}
+  .hero-preview{min-height:210px}
+}
+
 </style>
 
 
 </head>
 <body>
-<header>
-  <h1>Relationship Compatibility</h1>
-  <div class="subtitle">Editable master data • calculated compatibility metrics • browser save • printable report</div>
-  <div id="authBar" class="auth-bar">
-    <div class="auth-user"><span class="auth-status"><i id="authDot" class="auth-dot"></i><span id="authState">Local mode</span></span><strong id="authEmail"></strong></div>
-    <div class="auth-actions"><button id="loginButton" class="small" onclick="openFirebaseLogin()">Login</button><button id="logoutButton" class="small danger" style="display:none" onclick="firebaseLogout()">Log Out</button></div>
+<header class="site-header">
+  <div class="site-topbar">
+    <div class="site-brand">
+      <div class="site-logo" aria-hidden="true"><span>R</span><span>C</span><span>7</span><span>10</span></div>
+      <div class="site-brand-copy"><strong>Relationship</strong><span>Compatibility Studio</span></div>
+    </div>
+    <div class="site-toplinks">
+      <button onclick="activeTab='Dashboard';render()">Dashboard</button>
+      <button onclick="activeTab='Profiles';render()">Profiles</button>
+      <button onclick="activeTab='Profile View';render()">Profile View</button>
+      <button onclick="activeTab='Comparison';render()">Compare</button>
+      <button onclick="openReportOptions()">Reports</button>
+    </div>
+    <div id="authBar" class="auth-bar">
+      <div class="auth-user"><span class="auth-status"><i id="authDot" class="auth-dot"></i><span id="authState">Local mode</span></span><strong id="authEmail"></strong></div>
+      <div class="auth-actions"><button id="loginButton" class="small" onclick="openFirebaseLogin()">Log In</button><button id="logoutButton" class="small danger" style="display:none" onclick="firebaseLogout()">Log Out</button></div>
+    </div>
   </div>
   <div class="actions">
     <button class="primary" onclick="saveData()">Save Data</button>
     <button class="green" onclick="openReportOptions()">📄 Generate Report</button>
-
   </div>
 </header>
 <div id="firebaseAuthGate" class="auth-gate">
@@ -1274,7 +1608,34 @@ function dashboard(){
   const selectedScenarioAvg=selectedScenario.length?avg(selectedScenario):null;
   const options=names.map(n=>`<option value="${esc(n)}" ${n===dashboardProfileName?"selected":""}>${esc(n)}</option>`).join("");
   const scenarioPreview=scenario.map(r=>({name:r[0]+" "+r[1],a:valNum(r[3]),p:valNum(r[4])})).filter(x=>x.a!==null||x.p!==null);
-  return `<div class="notice">Choose a profile in the Spiderweb selector to view <b>only that person's</b> profile scores. Use <b>Comparison</b> when you want 2 or 3 people together.</div>
+  return `<section class="creative-hero">
+    <div class="hero-inner">
+      <div>
+        <span class="hero-kicker">RELATIONSHIP COMPATIBILITY STUDIO</span>
+        <div class="hero-title">See your relationship in a clearer way.</div>
+        <div class="hero-copy">Explore one profile at a time, compare people when you need to, and keep your relationship data organized in one friendly workspace.</div>
+        <div class="hero-controls">
+          <select class="hero-select" onchange="dashboardProfileName=this.value;render()" aria-label="Select profile">
+            ${options}
+          </select>
+          <button class="hero-primary" onclick="activeTab='Profile View';selectedProfileName=dashboardProfileName;render()">Open Profile</button>
+          <button onclick="activeTab='Comparison';render()">Compare Profiles</button>
+        </div>
+      </div>
+      <div class="hero-preview">
+        <div class="hero-preview-title"><span>Selected profile</span><strong>${esc(dashboardProfileName||"No profile")}</strong></div>
+        <div class="hero-score">
+          <div class="hero-score-card"><div class="label">Compatibility</div><div class="value">${selectedAvg===null?"—":selectedAvg.toFixed(1)}</div></div>
+          <div class="hero-score-card"><div class="label">Scenario score</div><div class="value">${selectedScenarioAvg===null?"—":selectedScenarioAvg.toFixed(1)}</div></div>
+        </div>
+        <div class="hero-mini-chart" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="notice">Choose a profile in the Spiderweb selector to view <b>only that person's</b> profile scores. Use <b>Comparison</b> when you want 2 or 3 people together.</div>`;
+
   <div class="grid">
     <div class="card kpi"><div class="label">Profiles</div><div class="value">${profileCount}</div><div class="hint">People currently in the study</div></div>
     <div class="card kpi"><div class="label">Categories</div><div class="value">${catCount}</div><div class="hint">Relationship dimensions</div></div>
