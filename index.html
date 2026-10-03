@@ -2409,24 +2409,145 @@ function drawDashboardAnalytics(){
 function reportHTML(scope="all"){
   const names=profileNamesEnhanced();
   const selected=scope==="all"?names:[scope].filter(n=>names.includes(n));
-  const rows=scores();
   const profiles=selected.map(name=>profileByName(name)).filter(Boolean);
-  const spiderRows=db["Spider Chart Data"]?.rows||[];
-  const scoreHeaders=selected.map(n=>n);
-  const scoreTableRows=spiderRows.map(r=>{
+  const spider=db["Spider Chart Data"]||{headers:[],rows:[]};
+  const scenario=db["Scenario Study"]||{headers:[],rows:[]};
+  const scopeLabel=scope==="all"?"All profiles":scope;
+
+  const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
+  const headerCells=selected.map(n=>`<th>${esc(n)}</th>`).join("");
+  const scoreRows=(spider.rows||[]).map(r=>{
     const cat=String(r?.[0]||"");
-    const cells=selected.map(name=>{const idx=findHeaderIndex(db["Spider Chart Data"]?.headers||[],name);const v=idx>=0?valNum(r?.[idx]):null;return `<td>${v===null?"":v}</td>`}).join("");
+    const cells=selected.map(name=>{
+      const idx=findHeaderIndex(spider.headers||[],name);
+      const v=idx>=0?valNum(r?.[idx]):null;
+      return `<td>${v===null?"":v}</td>`;
+    }).join("");
     return `<tr><td>${esc(cat)}</td>${cells}</tr>`;
   }).join("");
-  const profileTable=profiles.map(r=>`<tr>${r.slice(0,6).map(v=>`<td>${esc(v??"")}</td>`).join("")}</tr>`).join("");
-  const scopeLabel=scope==="all"?"All profiles":scope;
-  const headerCells=scoreHeaders.map(n=>`<th>${esc(n)}</th>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Relationship Compatibility Report</title><style>body{font-family:Arial,sans-serif;color:#172033;padding:35px}h1{margin-bottom:4px}h2{margin-top:28px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f1f3f7}.scope{display:inline-block;padding:5px 9px;background:#f1f3f7;border-radius:999px;font-size:11px}.muted{color:#667085}@media print{body{padding:15px}}</style></head><body>
-<h1>Relationship Compatibility Study Report</h1><div class="muted">Scope: <span class="scope">${esc(scopeLabel)}</span></div><div class="muted">Generated ${new Date().toLocaleString()}</div>
-<h2>Profiles</h2><table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profileTable}</table>
-<h2>Spider Chart Data</h2><table><tr><th>Category</th>${headerCells}</tr>${scoreTableRows}</table>
-<h2>Scenario Study</h2><table><tr><th>Scenario</th>${selected.map(n=>`<th>${esc(n)}</th>`).join("")}</tr>${(db["Scenario Study"]?.rows||[]).map(r=>{const cells=selected.map(name=>{const idx=findHeaderIndex(db["Scenario Study"]?.headers||[],name+" Response Score (1-10)"),v=idx>=0?valNum(r?.[idx]):null;return `<td>${v===null?"":v}</td>`}).join("");return `<tr><td>${esc(r?.[1]||r?.[0]||"")}</td>${cells}</tr>`}).join("")}</table>
-<p class="muted">This report is a descriptive data summary. Blank fields remain blank.</p><script>window.onload=()=>window.print();<\/script></body></html>`;
+
+  // Report radar chart — uses exactly the selected report profiles.
+  const radarData=(spider.rows||[]).map(r=>{
+    const name=String(r?.[0]||"").trim();
+    if(!name)return null;
+    return {name, values:selected.map(person=>{
+      const idx=findHeaderIndex(spider.headers||[],person);
+      return idx>=0?valNum(r?.[idx]):null;
+    })};
+  }).filter(x=>x&&x.values.some(v=>v!==null));
+
+  function reportRadarSVG(){
+    if(!radarData.length)return '<div class="report-empty">No spider-chart scores available for this report.</div>';
+    const w=760,h=440,cx=380,cy=215,R=145,n=radarData.length;
+    const colors=["#0071e3","#af52de","#34a853","#ff9500"];
+    const angle=i=>(-Math.PI/2)+(i*2*Math.PI/n);
+    const pt=(i,v,rr=R)=>{
+      const a=angle(i),safe=v==null?0:Math.max(0,Math.min(10,v));
+      return [cx+(rr*(safe/10))*Math.cos(a),cy+(rr*(safe/10))*Math.sin(a)];
+    };
+    const ringPts=v=>radarData.map((_,i)=>{
+      const a=angle(i),rr=R*(v/10);
+      return [cx+rr*Math.cos(a),cy+rr*Math.sin(a)].join(",");
+    }).join(" ");
+    let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Compatibility radar chart">`;
+    [2,4,6,8,10].forEach(v=>out+=`<polygon points="${ringPts(v)}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`);
+    radarData.forEach((d,i)=>{
+      const a=angle(i),x=cx+R*Math.cos(a),y=cy+R*Math.sin(a);
+      const lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
+      let anchor="middle";if(lx<cx-12)anchor="end";if(lx>cx+12)anchor="start";
+      out+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#edf0f3"/><text x="${lx}" y="${ly+4}" text-anchor="${anchor}" font-size="10" fill="#667085">${esc(shortLabel(d.name,20))}</text>`;
+    });
+    selected.forEach((person,pi)=>{
+      const pts=radarData.map((d,i)=>pt(i,d.values[pi]??0)).map(p=>p.join(",")).join(" ");
+      const color=colors[pi%colors.length];
+      out+=`<polygon points="${pts}" fill="${color}" fill-opacity=".10" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      radarData.forEach((d,i)=>{
+        if(d.values[pi]!==null){
+          const [x,y]=pt(i,d.values[pi]);
+          out+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+        }
+      });
+    });
+    out+=`</svg><div class="report-legend">${selected.map((p,i)=>`<span><i style="background:${colors[i%colors.length]}"></i>${esc(p)}</span>`).join("")}</div>`;
+    return out;
+  }
+
+  const scenarioRows=(scenario.rows||[]).map(r=>{
+    const label=String(r?.[1]||r?.[0]||"").trim();
+    if(!label)return null;
+    return {name:label,values:selected.map(person=>{
+      const idx=findHeaderIndex(scenario.headers||[],person+" Response Score (1-10)");
+      return idx>=0?valNum(r?.[idx]):null;
+    })};
+  }).filter(x=>x&&x.values.some(v=>v!==null));
+
+  function reportScenarioSVG(){
+    if(!scenarioRows.length)return '<div class="report-empty">No scenario scores available for this report.</div>';
+    const labelW=245,left=labelW,right=58,top=28,rowH=42,bottom=30;
+    const w=820,h=top+scenarioRows.length*rowH+bottom,barW=w-left-right;
+    const colors=["#af52de","#0071e3","#34a853","#ff9500"];
+    let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scenario response chart">`;
+    [0,2,4,6,8,10].forEach(v=>{
+      const x=left+(v/10)*barW;
+      out+=`<line x1="${x}" y1="${top-8}" x2="${x}" y2="${h-bottom}" stroke="#edf0f3"/><text x="${x}" y="${top-12}" text-anchor="middle" font-size="9" fill="#98a2b3">${v}</text>`;
+    });
+    scenarioRows.forEach((d,i)=>{
+      const y=top+i*rowH+6;
+      out+=`<text x="8" y="${y+12}" font-size="10" fill="#475467">${esc(shortLabel(d.name,34))}</text>`;
+      selected.forEach((person,pi)=>{
+        const v=d.values[pi];
+        if(v===null)return;
+        const yy=y+pi*8;
+        const bw=(v/10)*barW;
+        const color=colors[pi%colors.length];
+        out+=`<rect x="${left}" y="${yy}" width="${Math.max(3,bw)}" height="6" rx="3" fill="${color}"/><text x="${Math.min(w-4,left+bw+5)}" y="${yy+6}" font-size="8" fill="#667085">${v}</text>`;
+      });
+    });
+    out+=`</svg><div class="report-legend">${selected.map((p,i)=>`<span><i style="background:${colors[i%colors.length]}"></i>${esc(p)}</span>`).join("")}</div>`;
+    return out;
+  }
+
+  const chartSections=`
+    <section class="report-chart-section">
+      <h2>Compatibility Profile</h2>
+      <p class="muted">Visual comparison of the selected profile score data.</p>
+      <div class="report-chart">${reportRadarSVG()}</div>
+    </section>
+    <section class="report-chart-section">
+      <h2>Scenario Response</h2>
+      <p class="muted">Scenario scores for the selected report scope.</p>
+      <div class="report-chart report-scenario">${reportScenarioSVG()}</div>
+    </section>`;
+
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relationship Compatibility Report</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#172033;background:#f6f7f9;margin:0;padding:28px;line-height:1.45}
+.report{max-width:980px;margin:0 auto;background:#fff;padding:34px;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+h1{margin:0 0 5px;font-size:28px;letter-spacing:-.03em}h2{margin:30px 0 8px;font-size:18px;letter-spacing:-.02em}
+.muted{color:#667085;font-size:12px}.scope{display:inline-block;padding:5px 9px;background:#f1f3f7;border-radius:999px;font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:11px;margin-top:10px}th,td{border:1px solid #e5e7eb;padding:7px;text-align:left;vertical-align:top}th{background:#f8fafc;color:#475467}
+.report-chart-section{break-inside:avoid}.report-chart{margin-top:10px;border:1px solid #e5e7eb;border-radius:16px;padding:12px;background:#fcfcfd;overflow:hidden}.report-chart svg{width:100%;height:auto;display:block}.report-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#667085}.report-legend span{display:inline-flex;align-items:center;gap:6px}.report-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}.report-empty{padding:50px;text-align:center;color:#98a2b3;font-style:italic}
+.report-scenario{overflow-x:auto}.report-scenario svg{min-width:700px}
+@media(max-width:700px){body{padding:10px}.report{padding:18px;border-radius:14px}h1{font-size:23px}.report-chart{padding:7px}.report-scenario svg{min-width:650px}table{font-size:10px}th,td{padding:6px}}
+@media print{body{background:#fff;padding:0}.report{box-shadow:none;max-width:none;padding:15px;border-radius:0}.report-chart-section{page-break-inside:avoid}.report-chart{border:1px solid #ddd}.report-scenario svg{min-width:0}h2{page-break-after:avoid}}
+</style></head><body><main class="report">
+<h1>Relationship Compatibility Study Report</h1>
+<div class="muted">Scope: <span class="scope">${esc(scopeLabel)}</span></div>
+<div class="muted">Generated ${new Date().toLocaleString()}</div>
+
+<h2>Profiles</h2>
+<table><tr><th>ID</th><th>Name</th><th>Age</th><th>Birthday</th><th>Occupation / Study</th><th>Education</th></tr>${profileTable}</table>
+
+${chartSections}
+
+<h2>Spider Chart Data</h2>
+<table><tr><th>Category</th>${headerCells}</tr>${scoreRows}</table>
+
+<h2>Scenario Study</h2>
+<table><tr><th>Scenario</th>${selected.map(n=>`<th>${esc(n)}</th>`).join("")}</tr>${scenarioRows.map(r=>`<tr><td>${esc(r.name)}</td>${r.values.map(v=>`<td>${v===null?"":v}</td>`).join("")}</tr>`).join("")}</table>
+
+<p class="muted">This report is a descriptive data summary. Blank fields remain blank.</p>
+</main><script>window.onload=()=>window.print();<\/script></body></html>`;
 }
 function openReportOptions(){
   const list=document.getElementById("reportOptionsList");
